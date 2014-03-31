@@ -1,0 +1,81 @@
+<html>
+  <head>
+    <title>COMPARING FACES</title>    
+    <link rel="stylesheet" type="text/css" href="style/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="style/bootstrap-theme.min.css">
+    <script src="script/jquery-1.11.0.min.js"></script>
+    <script src="script/bootstrap.min.js"></script>
+    <script src="script/script.js"></script>
+    <script src="script/jquery.form.js"></script>
+    <link rel="stylesheet" type="text/css" href="style/style.css">
+  </head>
+  <body>
+    <div class="mainbox">
+      <h2 style="text-align:center;">COMPARING FACES</h2>
+      <div class="mainpicbox">
+        <form action="http://10.193.251.172:8081/face_api" enctype="multipart/form-data" id="upload_form" method="post">
+          <div class="buttonbox">
+            <div class="file_button_container" id="file_button_container" style="float:left">
+              <input class="file_button" name="img_file_1" id="left_file" type="file">
+            </div>
+            <div class="file_button_container" id="file_button_container" style="float:right">
+              <input class="file_button" name="img_file_2" id="right_file" type="file">
+            </div>
+          </div>
+          <div class="picbox" id="left_pic_box" style="float:left">
+            <div class="pic_paper_container" id="paper_container_1"></div>
+            <div class="img_container" id="pic_box_1">
+              <img class="img_content" id="left_img" src="">
+            </div>
+          </div>
+          <div class="picbox"  id="right_pic_box"style="float:right">
+            <div class="pic_paper_container" id="paper_container_2"></div>
+            <div class="img_container" id="pic_box_2">
+              <img class="img_content" id="right_img" src="">
+            </div>
+          </div>
+          <input type="hidden" name="method" value="upload_image">
+        </form>
+      </div>
+      <div class="console_container">
+        <div class="console_box" id="left_console_box" style="float:left"></div>
+        <div class="console_box" id="right_console_box" style="float:right"></div>
+      </div>
+      <div class="result_box">
+        <h2 id="result_box_h"></h2>
+        <h3 id="result_box_h3">Score ranging from 0(not similar) to 1(similar).</h3>
+        <p id="result_box_p"></p>
+      </div>
+      <div class="submit_box">
+        <p style="text-align:center;"><input id="submit_button" class="submit_button" type="button" value="Face Detection"> 
+          &nbsp;<input id="refresh_button" class="submit_button" type="button" value="Reload"></p>
+      </div>
+    </div>
+    <script type="text/javascript">
+      // $(".file_button").css('display', 'none');
+      // $(".")
+
+      $("#left_file").on('change', function(){
+        leftReader.readAsDataURL(this.files[0]);
+      });
+
+      $("#right_file").on('change', function(){
+        rightReader.readAsDataURL(this.files[0]);
+      });
+
+      $("#refresh_button").click(function(){
+        location.reload();
+      });
+
+      $("#submit_button").click(function(){
+        if ($("#left_file")[0].files[0] && $("#right_file")[0].files[0] && (! hasDetected)) {
+          hasClickedDetection = true;
+          comparePicMainFunc();
+        } else if (hasDetected && (rightSelected >= 0) && (leftSelected >= 0) && (! isComparing)) {
+          compareFace(leftSelected  , rightSelected);
+        }
+      });
+
+    </script>
+  </body>
+</html>

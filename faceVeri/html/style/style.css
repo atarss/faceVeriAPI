@@ -1,0 +1,129 @@
+.mainbox {
+	width: 1200px;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+.mainpicbox {
+	margin-top: 20px;
+	height: 630px;
+}
+
+.picbox {
+	background-color: #CCC;
+	margin-left: 10px;
+	margin-right: 10px;
+	height: 600px;
+	width: 580px;
+}
+
+img.img_content{
+	max-width: 580px;
+	max-height: 600px;
+	z-index: 5;
+}
+
+.submit_box {
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-top: 20px;
+}
+
+.file_button {
+	margin-left: auto;
+	margin-right: auto;
+	height : 30px;
+	z-index: 1;
+}
+
+.submit_button {
+	height: 50px;
+	width: 180px;
+}
+
+.pic_paper {
+	position: relative;
+}
+
+.pic_paper_container {
+	width: 0;
+	height: 0;
+}
+
+.buttonbox {
+	width: 1200px;
+	height: 30px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.file_button_container {
+	background-color: #CCC;
+	width: 580px;
+	height: 30px;	
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.pic_paper_box {
+	border-color: black;
+	border-width: 1px;
+	border-style: solid;
+	position: relative;
+	z-index: 10;
+}
+
+canvas {
+	display: none;
+	z-index: 11;
+}
+
+.console_container {
+	height: 70px;
+	width: 1200px;
+	margin-top: 20px;
+	margin-left: auto;
+	margin-right: auto;
+	display: none;
+}
+
+.console_box {
+	height: 70px;
+	width: 580px;
+	margin-left: 10px;
+	margin-right: 10px;
+	background-color: #CCC;
+}
+
+.result_box {
+	height: 70px;
+	width: 1180px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 20px;
+	background-color: #CCC;
+	display: none;
+	text-align: center;
+}
+
+.img_container {
+	position: relative;
+	text-align: center;
+}
+
+p.console_error {
+	text-align: center;
+	color: red;
+}
+
+.console_message {
+	text-align: center;
+}
+
+#result_box_h {
+	margin : 0;
+}
+
+#result_box_h3{
+	margin : 0;
+}
