@@ -2,7 +2,11 @@
 // main.js
 // Version : 1.0
 
-var currentDirectory = "/home/liuyuxuan/dev/node/face_api_plus/"
+var currentDirectory = "/home/liuyuxuan/dev/node/face_api_plus/";
+var serverIP = "10.193.251.172";
+var serverPort = 8082;
+var socketServerIP = "10.193.251.173";
+var socketServerPort = 8888;
 
 //Requirements here
 var http = require('http');
@@ -13,7 +17,6 @@ var urlParser = require('url').parse;
 var util = require('util');
 var sys = require("sys");
 var spawn = require('child_process').spawn;
-// var $ = require('jQuery'); // jquery 1.7.2
 var htmlparser = require('htmlparser');
 
 var queue = new Array();
@@ -162,7 +165,7 @@ http.createServer(function (req, res) {
 
             var connection = new net.Socket();
             var connectionBody = '';
-            connection.connect(8888,'10.193.251.173');
+            connection.connect(socketServerPort,socketServerIP);
             connection.write(inputXmlFileName + "#" + outputXmlFileName + "#" + "detect");
             connection.on('data', function(d){connectionBody += d});
 
@@ -271,6 +274,6 @@ http.createServer(function (req, res) {
     res.end('{ "error" : "PLEASE USE HTTP POST METHOD"}');
   }
 
-}).listen(8082, '10.193.251.172');
+}).listen(serverPort, serverIP);
 
-console.log('Socket API server running at http://10.193.251.172:8082/face_api');
+console.log('Socket API server running at http://' + serverIP ":" + serverPort + '/face_api');
