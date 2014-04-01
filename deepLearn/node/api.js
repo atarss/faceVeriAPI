@@ -1,4 +1,4 @@
-//// API SERVER 
+//// API SERVER
 // api.js
 // Version : 1.0
 
@@ -83,7 +83,7 @@ setInterval(function(){
         fs.renameSync(newQueue[i].fileName, processDir + newQueue[i].id + ".JPEG");
         console.log("MV "+newQueue[i].fileName+" "+processDir + newQueue[i].id + ".JPEG "+Date());
       }
-      
+
       var connection = new net.Socket();
       var connectionBody = '';
       connection.connect(8008,'10.193.251.173');
@@ -91,7 +91,7 @@ setInterval(function(){
       connection.on('data', function(d){connectionBody += d});
       connection.on('close', function(){
         connection.destroy();
-        
+
         var result = connectionBody.slice(16); /*useless data on the first 16 bytes*/
         console.log("SERVER Result : "+result);
         var resultObj = parseTCP(result,currentQueueLength);
@@ -113,7 +113,7 @@ setInterval(function(){
 setInterval(function(){
   console.log(Date()+"====Full Length : "+queue.length);
   // console.log(queue);
-},1000*30); 
+},1000*30);
 
 http.createServer(function (req, res) {
   if (req.method.toLowerCase() == "post") {
@@ -192,7 +192,7 @@ http.createServer(function (req, res) {
             if (queue[imgId].status.toLowerCase() == "done") {
               res.end(JSON.stringify({
                 id : imgId,
-                status : queue[imgId].status,  
+                status : queue[imgId].status,
                 result : queue[imgId].result   }));
               return;
             } else {
