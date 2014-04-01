@@ -5,6 +5,7 @@
 var currentDirectory = "/home/liuyuxuan/dev/node/face_api_plus/";
 var serverIP = "10.193.251.172";
 var serverPort = 8081;
+var serverApiPath = '/face_api';
 var socketServerIP = "10.193.251.173";
 var socketServerPort = 8888;
 
@@ -100,7 +101,7 @@ function parseXmlImgData (imgDomObj) {
 http.createServer(function (req, res) {
   if (req.method.toLowerCase() == "post") {
     var urlPath = urlParser(req.url).pathname;
-    if (urlPath == "/face_api") {
+    if (urlPath == serverApiPath) {
       var form = new formidable.IncomingForm();
       form.uploadDir = "./images/";
       form.encoding = 'utf-8';
@@ -182,26 +183,34 @@ http.createServer(function (req, res) {
               console.log(connectionBody);
               var endDate = new Date();
               console.log("Time : "+(endDate-startDate)+"ms");
-              var outputXmlStr = fs.readFileSync(outputXmlFileName);
 
-              //start xml parser
-              var xmlHandler = new htmlparser.DefaultHandler(function (error, dom){ }, { verbose: false, ignoreWhitespace: true });
-              var xmlParser = new htmlparser.Parser(xmlHandler);
-              xmlParser.parseComplete(outputXmlStr);
-              // console.log(xmlHandler.dom[1].children[0].children[1]);
-              var imgResult1 = parseXmlImgData(xmlHandler.dom[1].children[0].children);
-              var imgResult2 = parseXmlImgData(xmlHandler.dom[1].children[1].children);
-              // console.log(xmlHandler.dom[1].children[1].children)
-              // console.log(imgResult1);
-              queue[imgId1].result = imgResult1;
-              queue[imgId2].result = imgResult2;
-              
-              responseObj = {
-                img1 : { id : imgId1 , result : imgResult1 } , 
-                img2 : { id : imgId2 , result : imgResult2 } ,
-                time : (endDate-startDate)
-              };
-              res.end(JSON.stringify(responseObj));
+              fs.readFile(outputXmlFileName, function(err, outputXmlStr) {
+                if (err) {
+                  console.log("ERR : "+Date());
+                  console.log(err);
+                  res.end("Read Output File ERROR : "+outputXmlFileName);
+                  return;
+                } else {
+                  //start xml parser
+                  var xmlHandler = new htmlparser.DefaultHandler(function (error, dom){ }, { verbose: false, ignoreWhitespace: true });
+                  var xmlParser = new htmlparser.Parser(xmlHandler);
+                  xmlParser.parseComplete(outputXmlStr);
+                  // console.log(xmlHandler.dom[1].children[0].children[1]);
+                  var imgResult1 = parseXmlImgData(xmlHandler.dom[1].children[0].children);
+                  var imgResult2 = parseXmlImgData(xmlHandler.dom[1].children[1].children);
+                  // console.log(xmlHandler.dom[1].children[1].children)
+                  // console.log(imgResult1);
+                  queue[imgId1].result = imgResult1;
+                  queue[imgId2].result = imgResult2;
+                  
+                  responseObj = {
+                    img1 : { id : imgId1 , result : imgResult1 } , 
+                    img2 : { id : imgId2 , result : imgResult2 } ,
+                    time : (endDate-startDate)
+                  };
+                  res.end(JSON.stringify(responseObj));
+                }
+              });
             });
 
             return;
@@ -228,7 +237,7 @@ http.createServer(function (req, res) {
             var startDate = new Date();
             var connection = new net.Socket();
             var connectionBody = '';
-            connection.connect(8888,'10.193.251.173');
+            connection.connect(socketServerPort,socketServerIP);
             connection.write(recInputXmlFileName + "#" + recOutputFileName + "#" + "recognition");
             connection.on('data', function(d){connectionBody += d});
 
@@ -248,16 +257,25 @@ http.createServer(function (req, res) {
               console.log(connectionBody);
               var endDate = new Date();
               console.log("Time : "+(endDate-startDate)+"ms");
-              var outputStr = fs.readFileSync(recOutputFileName);
-              var resultNumber = parseFloat(outputStr);
-              console.log("Result : " + resultNumber);
+              fs.readFile(recOutputFileName, function(err, outputStr){
+                console.log("start read file 2");
+                if (err) {
+                  console.log("ERR : "+Date());
+                  console.log(err);
+                  res.end("Read Output File ERROR : " + recOutputFileName);
+                  return;
+                } else {
+                  var resultNumber = parseFloat(outputStr + "");
+                  console.log("Result : " + resultNumber);
 
-              responseObj = {
-                result : resultNumber,
-                time : (endDate-startDate)
-              };
+                  responseObj = {
+                    result : resultNumber,
+                    time : (endDate-startDate)
+                  };
 
-              res.end(JSON.stringify(responseObj));
+                  res.end(JSON.stringify(responseObj));
+                }
+              });
             });
             return;
 
@@ -276,4 +294,4 @@ http.createServer(function (req, res) {
 
 }).listen(serverPort, serverIP);
 
-console.log('Socket API server running at http://' + serverIP ":" + serverPort + '/face_api');
+console.log('Socket API server running at http://' + serverIP + ":" + serverPort + serverApiPath);
