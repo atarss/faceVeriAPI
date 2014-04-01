@@ -16,6 +16,8 @@ var detectionTime;
 var consoleMessageStr = "<h3 class='console_message'>Please select a face by clicking on a face.</h3>";
 var consoleErrorStr = "<p class='console_error'>ERROR : No faces were found on this picture.</p>";
 
+var apiServer = "http://10.193.251.172:8081/face_api";
+
 leftReader.onloadend = function(){
   $("#left_img").attr("src", this.result);
   var tmpImg = new Image();
@@ -255,7 +257,7 @@ function compareFace (faceId1, faceId2) {
   $(".submit_box").find("p").prepend("<img src='image/loading.gif' id='loading_gif'>");
   console.log(faceId1 + " , " + faceId2);
   
-  $.post("http://10.193.251.172:8081/face_api", {
+  $.post(apiServer, {
     'method' : 'compare_image',
     'img_id_1' : leftImgObj.serverId,
     'img_id_2' : rightImgObj.serverId,

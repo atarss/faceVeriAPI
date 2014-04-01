@@ -13,7 +13,7 @@
     <div class="mainbox">
       <h2 style="text-align:center;">COMPARING FACES</h2>
       <div class="mainpicbox">
-        <form action="http://10.193.251.172:8081/face_api" enctype="multipart/form-data" id="upload_form" method="post">
+        <form action="." enctype="multipart/form-data" id="upload_form" method="post">
           <div class="buttonbox">
             <div class="file_button_container" id="file_button_container" style="float:left">
               <input class="file_button" name="img_file_1" id="left_file" type="file">
@@ -54,6 +54,8 @@
     <script type="text/javascript">
       // $(".file_button").css('display', 'none');
       // $(".")
+      
+      $("#upload_form").attr("action",apiServer);
 
       $("#left_file").on('change', function(){
         leftReader.readAsDataURL(this.files[0]);
