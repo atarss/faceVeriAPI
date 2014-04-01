@@ -4,7 +4,7 @@
 
 var currentDirectory = "/home/liuyuxuan/dev/node/face_api_plus/";
 var serverIP = "10.193.251.172";
-var serverPort = 8082;
+var serverPort = 8081;
 var socketServerIP = "10.193.251.173";
 var socketServerPort = 8888;
 
