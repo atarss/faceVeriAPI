@@ -1,7 +1,12 @@
 /////full.js
+var apiAddress = "http://123.127.237.160:8080/image_api";
 
 var pictureList = new Array();
 var currentActiveItem = -1;
+
+function jqxConsole(log){
+  $("#jqx_console").prepend("<p>"+log+"</p>");
+}
 
 function resultFormat (obj) {
 	var str = "";
@@ -13,6 +18,22 @@ function resultFormat (obj) {
 
 function submitFile() {
 	var imgFile = $("#img_file")[0].files[0];
+  var picReader = new FileReader();
+  picReader.readAsDataURL($("#img_file")[0].files[0]);
+
+  picReader.onloadend = function(){
+    // Add result to list
+    var newArrObj = {
+      // domId : "pic_"+newIdNumber,
+      serverId : eval(resp).id,
+      picData : picReader.result,
+      fileName : imgFile.name
+    };
+    pictureList.push(newArrObj);
+
+    // ......
+  }
+
   if (imgFile && (pictureList.length < 20)) {
     $("#upload_form").ajaxSubmit({
       dataType : 'json',
@@ -35,7 +56,7 @@ function submitFile() {
         	var newDomId = newArrObj.domId;
         	var newDomText = "#"+(newIdNumber+1)+": "+newArrObj.fileName;
         	$("#picture_list").append("<a id='"+newDomId+"' class='list-group-item' href='#'>"+newDomText+"</a>");
-          
+
         	$("#"+newDomId).click(function(){
         		if (currentActiveItem >= 0) $("#pic_"+currentActiveItem).attr('class', 'list-group-item');
         		$(this).attr('class', 'list-group-item active');

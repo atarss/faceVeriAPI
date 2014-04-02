@@ -4,10 +4,16 @@
   	<script src="script/main.js"></script>
   	<script src="script/jquery-1.11.0.min.js"></script>
     <script src="script/jquery.form.js"></script>
+    <script src="script/jqxcore.js"></script>
+    <script src="script/jqxbuttons.js"></script>
+    <script src="script/jqxscrollbar.js"></script>
     <script src="script/jqxlistbox.js"></script>
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="style/style.css" />
+    <script src="script/jqxpanel.js"></script>
+    <link rel="stylesheet" href="style/bootstrap.min.css">
+    <link rel="stylesheet" href="style/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="style/jqx.base.css">
+    <link rel="stylesheet" href="style/jqx.darkblue.css">
+    <link rel="stylesheet" href="style/style.css">
   </head>
   <body>
     <div class="header">
@@ -40,7 +46,7 @@
                 File List:
               </div>
             </div>
-            <div class="list-group" id="picture_list" style="height : 455px"></div>
+            <div id="jqx_listbox" style="height : 455px"></div>
           </div>
         </div>
       </div>
@@ -63,6 +69,7 @@
         </div>
       </div>
     </div>
+    <div id="jqx_console"></div>
     <script type="text/javascript">
       var wrapper = $('<div/>').css({height:0,width:0,'overflow':'hidden'});
       var fileInput = $(':file').wrap(wrapper);
@@ -75,6 +82,19 @@
         $('#file').text($this.val());
         submitFile();
       });
+
+      var sourceArr = new Array(20);
+      for (i=0;i<20;i++) sourceArr[i] = i*i+"";
+
+      $("#jqx_listbox").jqxListBox({
+        source: null,
+        width: '326px', 
+        height: '455px'
+      });
+
+      $("#jqx_console").jqxPanel({ width: 980, height: 150});
+      jqxConsole("Console : ");
+      jqxConsole(Date());
     </script>
   </body>
 </html>

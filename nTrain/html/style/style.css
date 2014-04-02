@@ -10,6 +10,7 @@
 	margin-left: auto;
 	margin-right: auto;
 	width: 1000px;
+	height: 750px;
 }
 
 .left_frame {
@@ -42,7 +43,7 @@
 
 .result_frame {
 	width: 650px;
-	height: 750px;
+	height: 730px;
 	/* background-color: #EBE77F; */
 	float: right;
 	padding: 10px;
@@ -66,4 +67,10 @@
 	width: 250px;
 	margin-right: auto;
 	margin-left: auto;
+}
+
+#jqx_console {
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 50px;
 }
