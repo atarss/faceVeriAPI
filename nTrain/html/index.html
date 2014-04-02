@@ -1,0 +1,80 @@
+<html>
+  <head>
+  	<title>N-Train Demo</title>
+  	<script src="script/main.js"></script>
+  	<script src="script/jquery-1.11.0.min.js"></script>
+    <script src="script/jquery.form.js"></script>
+    <script src="script/jqxlistbox.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="style/style.css" />
+  </head>
+  <body>
+    <div class="header">
+      <h1>N-Train Demo</h1>
+    </div>
+    <div class="out_frame">
+      <div class="left_frame">
+        <div class="upload_frame">
+          <div class="panel panel-info">
+            <div class="panel-heading">
+              <div class="panel-title">Upload Here:</div>
+            </div>
+            <div class="panel-body">
+              <br />
+              <form action="http://123.127.237.160:8080/image_api" enctype="multipart/form-data" id="upload_form" method="post">
+                <div class="btn btn-lg btn-info" id="bt">Select File</div>
+                <input type="file" name="imgfile" accept="image/jpeg" style="display:none" id="img_file">
+                <input type="hidden" name="version" value="1.0">
+                <input type="hidden" name="method" value="upload_image">
+                <input type="hidden" name="id" value="0">
+              </form>
+              <h5 style="text-align:center">You can upload 8 to 20 pictures here</h5>
+            </div>
+          </div>
+        </div>
+        <div class="list_frame">
+          <div class="panel panel-info">
+            <div class="panel-heading">
+              <div class="panel-title">
+                File List:
+              </div>
+            </div>
+            <div class="list-group" id="picture_list" style="height : 455px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="result_frame">
+        <div class="panel panel-info" style="height : 700px;">
+          <div class="panel-heading">
+            <div class="panel-title">
+              Result:
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="img_box">
+              <img id="file_img" src="">
+            </div>
+            <div class="result_button_box">
+              <!-- insert some button here -->
+              BLABLABLA
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      var wrapper = $('<div/>').css({height:0,width:0,'overflow':'hidden'});
+      var fileInput = $(':file').wrap(wrapper);
+    	$("#upload_form").ajaxForm({type: 'POST'});
+      $("#bt").click(function(){
+        fileInput.click();
+      });
+      fileInput.change(function(){
+        $this = $(this);
+        $('#file').text($this.val());
+        submitFile();
+      });
+    </script>
+  </body>
+</html>
