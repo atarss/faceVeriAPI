@@ -28,12 +28,12 @@
             </div>
             <div class="panel-body">
               <br />
-              <form action="http://123.127.237.160:8080/image_api" enctype="multipart/form-data" id="upload_form" method="post">
-                <div class="btn btn-lg btn-info" id="bt">Select File</div>
+              <form action="http://10.193.251.172:8082/ntrain_api" enctype="multipart/form-data" id="upload_form" method="post">
+                <div class="btn btn-lg btn-info" id="bt">Loading...</div>
                 <input type="file" name="imgfile" accept="image/jpeg" style="display:none" id="img_file">
                 <input type="hidden" name="version" value="1.0">
                 <input type="hidden" name="method" value="upload_image">
-                <input type="hidden" name="id" value="0">
+                <input type="hidden" name="session_id" value="-1" id="form_session_id">
               </form>
               <h5 style="text-align:center">You can upload 8 to 20 pictures here</h5>
             </div>
@@ -87,14 +87,32 @@
       for (i=0;i<20;i++) sourceArr[i] = i*i+"";
 
       $("#jqx_listbox").jqxListBox({
-        source: null,
+        source: [],
         width: '326px', 
         height: '455px'
       });
+      $("#jqx_listbox").jqxListBox({itemHeight: 40});
+      $("#jqx_listbox").on('select', listBoxSelectFunction);
 
       $("#jqx_console").jqxPanel({ width: 980, height: 150});
       jqxConsole("Console : ");
       jqxConsole(Date());
+
+      $.post(apiAddress, {
+        // version : "1.0" ,
+        method : "create_session"
+      }, function(postResult) {
+        jqxConsole(JSON.stringify(postResult));
+        if (postResult.sessionId != undefined){
+          $("#bt").text("Upload File");
+          sessionId = postResult.sessionId;
+          $("#form_session_id").attr('value',sessionId)
+          hasSessionId = true;
+        } else {
+          jqxConsole("no session id! Unable to run program.")
+        }
+      }, 'json');
+
     </script>
   </body>
 </html>
