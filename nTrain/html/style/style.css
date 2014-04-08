@@ -48,6 +48,25 @@
 	padding: 10px;
 }
 
+.pic_paper_box {
+	border-color: black;
+	border-width: 1px;
+	border-style: solid;
+	position: relative;
+	z-index: 10;
+}
+
+.pic_paper_container {
+	width: 0;
+	height: 0;
+	position: relative;
+}
+
+canvas {
+	display: none;
+	z-index: 11;
+}
+
 #file_img {
 	max-height: 500px;
 	max-width: 600px;

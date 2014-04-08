@@ -24,6 +24,7 @@ function listBoxSelectFunction(event) {
   if (args) {
     selectedPicId = parseInt(args.index);
     jqxConsole("selected Id:" + selectedPicId);
+    $("#paper_container").html('');
 
     $("#file_img").attr('src', pictureList[selectedPicId].src);
     var leftOffset = parseInt((600 - $("#file_img").width())/2);
@@ -32,7 +33,59 @@ function listBoxSelectFunction(event) {
     $("#paper_container").css("left", leftOffset+"px");
 
     //insert canvas boxes
+    if (! pictureList[selectedPicId].result) {
+      // waiting for result
+    } else {
+      for (i=0; i<pictureList[selectedPicId].result.length; i++){
+        $("#paper_container").prepend("<div class='pic_paper_container' id='pic_box_container_"+i+"'></div>");
+        $("#pic_box_container_"+i).prepend("<div class='pic_paper_box' id='pic_box_"+i+"'></div>");
 
+        $("#pic_box_"+i).width(parseInt(pictureList[selectedPicId].result[i].w*picScale)).height(parseInt(pictureList[selectedPicId].result[i].h*picScale));
+        $("#pic_box_"+i).css('left',parseInt(pictureList[selectedPicId].result[i].x*picScale)).css('top',parseInt(pictureList[selectedPicId].result[i].y*picScale));
+
+        $("#pic_box_"+i).prepend("<canvas id='canvas_"+i+"' width="+parseInt(pictureList[selectedPicId].result[i].w*picScale)+" height="+parseInt(pictureList[selectedPicId].result[i].h*picScale)+" />");
+        var tmpCanvas = document.getElementById('canvas_'+i).getContext("2d");
+        for (j=0;j<27;j++){
+          var transX = (pictureList[selectedPicId].result[i].points[j].x - pictureList[selectedPicId].result[i].x)*picScale;
+          var transY = (pictureList[selectedPicId].result[i].points[j].y - pictureList[selectedPicId].result[i].y)*picScale;
+          tmpCanvas.beginPath();
+          tmpCanvas.arc(transX, transY, 1, 0, 2*Math.PI);
+          tmpCanvas.fillStyle = 'red';
+          tmpCanvas.fill();
+        }
+
+        $("#pic_box_"+i).mouseenter(function(){
+          var thisId = parseInt($(this).attr("id").slice(8));
+          if (pictureList[selectedPicId].selectedId != thisId) {
+            $(this).css('background-color','rgba(255,255,255,0.5)');
+            $(this).find("canvas").css("display", "inline-block");
+          }
+        }).mouseleave(function(){
+          var thisId = parseInt($(this).attr("id").slice(8));
+          if (pictureList[selectedPicId].selectedId != thisId) {
+            $(this).css('background-color','transparent');
+            $(this).find("canvas").css("display", "none");
+          }
+        }).click(function(){
+          var thisId = parseInt($(this).attr("id").slice(8));
+          if (pictureList[selectedPicId].selectedId != thisId) {
+            $("#pic_box_"+pictureList[selectedPicId].selectedId).css('border-color','black').css('background-color','transparent').find('canvas').css('display','none');
+            $(this).css('border-color','red').css('background-color','rgba(255,255,255,0.5)');
+            $(this).find("canvas").css("display", "inline-block");
+            pictureList[selectedPicId].selectedId = thisId;
+          } else {
+            pictureList[selectedPicId].selectedId = -1;
+            $(this).css('border-color','black');
+          }
+        });
+      }
+
+      //check selected face
+      if (pictureList[selectedPicId].selectedId >= 0) {
+        $("#pic_box_"+pictureList[selectedPicId].selectedId).css('border-color','red').css('background-color','rgba(255,255,255,0.5)');
+        $("#pic_box_"+pictureList[selectedPicId].selectedId).find('canvas').css('display','inline-block');
+      }
+    }
   }
 }
 
@@ -58,8 +111,6 @@ function submitFile() {
           originalWidth : tmpOriginalWidth,
           selectedId : -1
         });
-
-        console.log(this.width);
 
         $("#upload_form").ajaxSubmit({
           dataType : 'json',
