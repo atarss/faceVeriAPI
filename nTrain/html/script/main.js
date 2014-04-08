@@ -5,6 +5,7 @@ var pictureList = new Array();
 var currentActiveItem = -1;
 var hasSessionId = false;
 var sessionId = -1;
+var selectedPicId = -1;
 
 function jqxConsole(log){
   $("#jqx_console").jqxPanel('append', $("<span>"+log+"</span><br />"));
@@ -21,15 +22,22 @@ function resultFormat (obj) {
 function listBoxSelectFunction(event) {
   var args = event.args;
   if (args) {
-    var selectedPicId = parseInt(args.index);
-    jqxConsole("selected "+ args.label + " Id:" + selectedPicId);
+    selectedPicId = parseInt(args.index);
+    jqxConsole("selected Id:" + selectedPicId);
 
     $("#file_img").attr('src', pictureList[selectedPicId].src);
+    var leftOffset = parseInt((600 - $("#file_img").width())/2);
+    var picScale = $("#file_img").width() / pictureList[selectedPicId].originalWidth;
+    jqxConsole("picScale : "+picScale);
+    $("#paper_container").css("left", leftOffset+"px");
+
+    //insert canvas boxes
+
   }
 }
 
 function submitFile() {
-	var imgFile = $("#img_file")[0].files[0];
+  var imgFile = $("#img_file")[0].files[0];
   if (imgFile && (pictureList.length < 20)) {
     var picReader = new FileReader();
     picReader.readAsDataURL($("#img_file")[0].files[0]);
@@ -38,16 +46,31 @@ function submitFile() {
       // Add result to list
       jqxConsole(imgFile.name + " load end.");
       $("#jqx_listbox").jqxListBox('addItem', imgFile.name);
+      var thisId = pictureList.length;
+      var tmpOriginalWidth;
 
-      pictureList.push({src : picReader.result});
+      var tmpImg = new Image();
+      tmpImg.onload = function(){
+        tmpOriginalWidth = this.width;
+        pictureList.push({
+          id : thisId,
+          src : picReader.result,
+          originalWidth : tmpOriginalWidth,
+          selectedId : -1
+        });
 
-      $("#upload_form").ajaxSubmit({
-        dataType : 'json',
-        success : function(resp, status, xhr, jq){
-          jqxConsole("Uploaded : "+JSON.stringify(resp));
-        }
-      });
+        console.log(this.width);
 
+        $("#upload_form").ajaxSubmit({
+          dataType : 'json',
+          success : function(resp, status, xhr, jq){
+            jqxConsole("Uploaded : "+JSON.stringify(resp));
+            pictureList[thisId].result = resp.result;
+            pictureList[thisId].time = resp.time;
+          }
+        });
+      }
+      tmpImg.src = this.result;
     }
   }
 }

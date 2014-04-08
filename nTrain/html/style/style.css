@@ -44,7 +44,6 @@
 .result_frame {
 	width: 650px;
 	height: 730px;
-	/* background-color: #EBE77F; */
 	float: right;
 	padding: 10px;
 }
@@ -73,4 +72,9 @@
 	margin-left: auto;
 	margin-right: auto;
 	margin-bottom: 50px;
+}
+
+.pic_paper_container {
+	width: 0;
+	height: 0;
 }
