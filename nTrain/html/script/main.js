@@ -32,58 +32,94 @@ function listBoxSelectFunction(event) {
     jqxConsole("picScale : "+picScale);
     $("#paper_container").css("left", leftOffset+"px");
 
+    $("#result_console").html("");
+
     //insert canvas boxes
     if (! pictureList[selectedPicId].result) {
       // waiting for result
+      $("#result_console").html("<p style='text-align : center'>Loading...</p>");
     } else {
-      for (i=0; i<pictureList[selectedPicId].result.length; i++){
-        $("#paper_container").prepend("<div class='pic_paper_container' id='pic_box_container_"+i+"'></div>");
-        $("#pic_box_container_"+i).prepend("<div class='pic_paper_box' id='pic_box_"+i+"'></div>");
+      if (pictureList[selectedPicId].result.length == 0) {
+        $("#result_console").html("<h3 style='text-align : center; color : red;'>No faces found. </h3>");
+      } else {
+        for (i=0; i<pictureList[selectedPicId].result.length; i++){
+          $("#paper_container").prepend("<div class='pic_paper_container' id='pic_box_container_"+i+"'></div>");
+          $("#pic_box_container_"+i).prepend("<div class='pic_paper_box' id='pic_box_"+i+"'></div>");
 
-        $("#pic_box_"+i).width(parseInt(pictureList[selectedPicId].result[i].w*picScale)).height(parseInt(pictureList[selectedPicId].result[i].h*picScale));
-        $("#pic_box_"+i).css('left',parseInt(pictureList[selectedPicId].result[i].x*picScale)).css('top',parseInt(pictureList[selectedPicId].result[i].y*picScale));
+          $("#pic_box_"+i).width(parseInt(pictureList[selectedPicId].result[i].w*picScale)).height(parseInt(pictureList[selectedPicId].result[i].h*picScale));
+          $("#pic_box_"+i).css('left',parseInt(pictureList[selectedPicId].result[i].x*picScale)).css('top',parseInt(pictureList[selectedPicId].result[i].y*picScale));
 
-        $("#pic_box_"+i).prepend("<canvas id='canvas_"+i+"' width="+parseInt(pictureList[selectedPicId].result[i].w*picScale)+" height="+parseInt(pictureList[selectedPicId].result[i].h*picScale)+" />");
-        var tmpCanvas = document.getElementById('canvas_'+i).getContext("2d");
-        for (j=0;j<27;j++){
-          var transX = (pictureList[selectedPicId].result[i].points[j].x - pictureList[selectedPicId].result[i].x)*picScale;
-          var transY = (pictureList[selectedPicId].result[i].points[j].y - pictureList[selectedPicId].result[i].y)*picScale;
-          tmpCanvas.beginPath();
-          tmpCanvas.arc(transX, transY, 1, 0, 2*Math.PI);
-          tmpCanvas.fillStyle = 'red';
-          tmpCanvas.fill();
+          $("#pic_box_"+i).prepend("<canvas id='canvas_"+i+"' width="+parseInt(pictureList[selectedPicId].result[i].w*picScale)+" height="+parseInt(pictureList[selectedPicId].result[i].h*picScale)+" />");
+          var tmpCanvas = document.getElementById('canvas_'+i).getContext("2d");
+          for (j=0;j<27;j++){
+            var transX = (pictureList[selectedPicId].result[i].points[j].x - pictureList[selectedPicId].result[i].x)*picScale;
+            var transY = (pictureList[selectedPicId].result[i].points[j].y - pictureList[selectedPicId].result[i].y)*picScale;
+            tmpCanvas.beginPath();
+            tmpCanvas.arc(transX, transY, 1, 0, 2*Math.PI);
+            tmpCanvas.fillStyle = 'red';
+            tmpCanvas.fill();
+          }
+
+          $("#pic_box_"+i).mouseenter(function(){
+            var thisId = parseInt($(this).attr("id").slice(8));
+            if (pictureList[selectedPicId].selectedId != thisId) {
+              $(this).css('background-color','rgba(255,255,255,0.5)');
+              $(this).find("canvas").css("display", "inline-block");
+            }
+          }).mouseleave(function(){
+            var thisId = parseInt($(this).attr("id").slice(8));
+            if (pictureList[selectedPicId].selectedId != thisId) {
+              $(this).css('background-color','transparent');
+              $(this).find("canvas").css("display", "none");
+            }
+          }).click(function(){
+            var thisId = parseInt($(this).attr("id").slice(8));
+            if (pictureList[selectedPicId].selectedId != thisId) {
+              // select this face
+              $("#pic_box_"+pictureList[selectedPicId].selectedId).css('border-color','black').css('background-color','transparent').find('canvas').css('display','none');
+              $(this).css('border-color','red').css('background-color','rgba(255,255,255,0.5)');
+              $(this).find("canvas").css("display", "inline-block");
+              pictureList[selectedPicId].selectedId = thisId;
+
+              var tmpStr = "<p>";
+              tmpStr += "Picture Size : "+pictureList[selectedPicId].originalWidth+"x"+pictureList[selectedPicId].originalHeight;
+              tmpStr += '<br />';
+              tmpStr += "Face Size : "+pictureList[selectedPicId].result[thisId].w+"x"+pictureList[selectedPicId].result[thisId].h;
+              tmpStr += "<br />";
+              tmpStr += "Detection Time : "+pictureList[selectedPicId].time+"ms";
+              tmpStr += "</p>";
+
+              $("#result_console").html(tmpStr);
+            } else {
+              pictureList[selectedPicId].selectedId = -1;
+              $(this).css('border-color','black');
+              $("#result_console").html("<p style='text-align : center'>Please Select a Face...</p>");
+            }
+          });
         }
 
-        $("#pic_box_"+i).mouseenter(function(){
-          var thisId = parseInt($(this).attr("id").slice(8));
-          if (pictureList[selectedPicId].selectedId != thisId) {
-            $(this).css('background-color','rgba(255,255,255,0.5)');
-            $(this).find("canvas").css("display", "inline-block");
-          }
-        }).mouseleave(function(){
-          var thisId = parseInt($(this).attr("id").slice(8));
-          if (pictureList[selectedPicId].selectedId != thisId) {
-            $(this).css('background-color','transparent');
-            $(this).find("canvas").css("display", "none");
-          }
-        }).click(function(){
-          var thisId = parseInt($(this).attr("id").slice(8));
-          if (pictureList[selectedPicId].selectedId != thisId) {
-            $("#pic_box_"+pictureList[selectedPicId].selectedId).css('border-color','black').css('background-color','transparent').find('canvas').css('display','none');
-            $(this).css('border-color','red').css('background-color','rgba(255,255,255,0.5)');
-            $(this).find("canvas").css("display", "inline-block");
-            pictureList[selectedPicId].selectedId = thisId;
-          } else {
-            pictureList[selectedPicId].selectedId = -1;
-            $(this).css('border-color','black');
-          }
-        });
-      }
+        //check selected face
+        if (pictureList[selectedPicId].selectedId >= 0) {
+          var selectedFaceId = pictureList[selectedPicId].selectedId;
+          $("#pic_box_"+selectedFaceId).css('border-color','red').css('background-color','rgba(255,255,255,0.5)');
+          $("#pic_box_"+selectedFaceId).find('canvas').css('display','inline-block');
 
-      //check selected face
-      if (pictureList[selectedPicId].selectedId >= 0) {
-        $("#pic_box_"+pictureList[selectedPicId].selectedId).css('border-color','red').css('background-color','rgba(255,255,255,0.5)');
-        $("#pic_box_"+pictureList[selectedPicId].selectedId).find('canvas').css('display','inline-block');
+          var tmpStr = "<p>";
+          tmpStr += "Picture Size : "+pictureList[selectedPicId].originalWidth+"x"+pictureList[selectedPicId].originalHeight;
+          tmpStr += '<br />';
+          tmpStr += "Face Size : "+pictureList[selectedPicId].result[selectedFaceId].w+"x"+pictureList[selectedPicId].result[selectedFaceId].h;
+          tmpStr += "<br />";
+          tmpStr += "Detection Time : "+pictureList[selectedPicId].time+"ms";
+          tmpStr += "</p>";
+
+          $("#result_console").html(tmpStr);
+        } else {
+          if (pictureList[selectedPicId].result.length == 1) {
+            $("#pic_box_0").click();
+          } else {
+            $("#result_console").html("<p style='text-align : center'>Please Select a Face...</p>");
+          }
+        }
       }
     }
   }
@@ -100,15 +136,17 @@ function submitFile() {
       jqxConsole(imgFile.name + " load end.");
       $("#jqx_listbox").jqxListBox('addItem', imgFile.name);
       var thisId = pictureList.length;
-      var tmpOriginalWidth;
+      var tmpOriginalWidth, tmpOriginalHeight;
 
       var tmpImg = new Image();
       tmpImg.onload = function(){
         tmpOriginalWidth = this.width;
+        tmpOriginalHeight = this.height;
         pictureList.push({
           id : thisId,
           src : picReader.result,
           originalWidth : tmpOriginalWidth,
+          originalHeight : tmpOriginalHeight,
           selectedId : -1
         });
 
@@ -126,6 +164,43 @@ function submitFile() {
   }
 }
 
+function validFacesNumber(){
+  var sum = 0;
+  for (index=0; index<pictureList.length; index++){
+    if (pictureList[index].selectedId >= 0) sum++;
+  }
+
+  return sum;
+}
+
+function submitFaces(){
+  jqxConsole("[INFO] " + validFacesNumber());
+  if (validFacesNumber() >= 8) {
+    var faceArr = new Array();
+    for (i=0; i<pictureList.length; i++){
+      if (pictureList[i].selectedId >= 0){
+        faceArr.push({
+          picId : i,
+          faceId : pictureList[i].selectedId
+        });
+      }
+    }
+
+    var jsonStr = JSON.stringify(faceArr);
+    jqxConsole("[JSON] " + jsonStr);
+
+    $.post(apiAddress, {
+      method : "submit_face",
+      json_data : jsonStr,
+      session_id : sessionId
+    }, function(data, textStatus, jqXHR){
+      jqxConsole(JSON.stringify(data));
+    }, 'json');
+
+  } else {
+    jqxConsole("[ERR] No enough faces...");
+  }
+}
 // if (imgFile && (pictureList.length < 20)) {
 //   $("#upload_form").ajaxSubmit({
 //     dataType : 'json',

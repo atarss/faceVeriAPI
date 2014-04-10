@@ -22,14 +22,12 @@
 	height: 200px;
 	margin-top: auto;
 	margin-bottom: auto;
-	/* background-color: #7FEBD7; */
 	padding: 10px;
 }
 
 .list_frame {
 	margin-top: auto;
 	margin-bottom: auto;
-	/* background-color: #7FEB95; */
 	padding: 10px;
 }
 
@@ -48,6 +46,20 @@
 	padding: 10px;
 }
 
+.compare_frame {
+	width: 1000px;
+	height: 700px;
+	padding: 10px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.compare_button_box {
+	height: 60px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 .pic_paper_box {
 	border-color: black;
 	border-width: 1px;
@@ -60,6 +72,14 @@
 	width: 0;
 	height: 0;
 	position: relative;
+}
+
+.submit_face_box {
+	width: 1000px;
+	margin-left: auto;
+	margin-right: auto;
+	height : 50px;
+	margin-bottom: 20px;
 }
 
 canvas {
@@ -81,6 +101,12 @@ canvas {
 	text-align: center;
 }
 
+#submit_face_button {
+	width: 250px;
+	text-align: center;
+	margin-left: 380px;
+}
+
 #upload_form {
 	width: 250px;
 	margin-right: auto;
@@ -88,6 +114,7 @@ canvas {
 }
 
 #jqx_console {
+	margin-top: 20px;
 	margin-left: auto;
 	margin-right: auto;
 	margin-bottom: 50px;

@@ -3,11 +3,14 @@
 // Version : 1.0
 
 var currentDirectory = "/home/liuyuxuan/dev/node/nTrain/";
+var trainDirectory = '/home/liuyuxuan/dev/Identification/project/HFeature/';
 var serverIP = "10.193.251.172";
 var serverPort = 8082;
 var serverApiPath = '/ntrain_api';
 var socketServerIP = "10.193.251.172";
 var socketServerPort = 8888;
+
+var dbFileName = currentDirectory + "queue.db";
 
 //Requirements here
 var http = require('http');
@@ -20,13 +23,81 @@ var sys = require("sys");
 var spawn = require('child_process').spawn;
 var htmlparser = require('htmlparser');
 
-var sessionQueue = new Array();
+var queueJsonStr = fs.readFileSync(dbFileName) + "";
+var sessionQueue = eval(queueJsonStr);
+console.log("[INFO] Load queue.db file, LEN:" + queueJsonStr.length);
 
-//Send an array here
+var tmpImageQueue = new Array();
+
+//Save When Exit or Crashed
+function saveQueueData() {
+  var DBSTR = JSON.stringify(sessionQueue);
+  fs.writeFileSync(dbFileName, DBSTR);
+  console.log("[INFO] saved to " + dbFileName + " ; LEN:"+DBSTR.length);
+  process.exit(0);
+}
+
+process.on('uncaughtException', function(err){
+  console.log("[ERR] : " + err);
+  saveQueueData();
+});
+process.on("SIGINT", saveQueueData);
+
 function constructDetectXmlFile (imgPathStr) {
   var resultStr = '<?xml version = "1.0"?><input><path>';
   resultStr += imgPathStr;
   resultStr += "</path></input>";
+  return resultStr;
+}
+
+function constructFaceXmlFile (faceObj, sessionId) {
+  var resultStr = '<?xml version = "1.0"?><input>';
+  for (i=0; i<faceObj.length; i++) {
+    var thisPic = sessionQueue[sessionId].imgArr[faceObj[i].picId];
+    var faceId = faceObj[i].faceId;
+    resultStr += "<face><path>";
+    resultStr += thisPic.fileName;
+    resultStr += "</path><rec>";
+
+    resultStr += ("<x>" + thisPic.result[faceId].x + "</x>");
+    resultStr += ("<y>" + thisPic.result[faceId].y + "</y>");
+    resultStr += ("<w>" + thisPic.result[faceId].w + "</w>");
+    resultStr += ("<h>" + thisPic.result[faceId].h + "</h>");
+
+    for (j=0; j<27; j++) {
+      resultStr += "<point><x>";
+      resultStr += thisPic.result[faceId].points[j].x;
+      resultStr += "</x><y>";
+      resultStr += thisPic.result[faceId].points[j].y;
+      resultStr += "</y></point>";
+    }
+
+    resultStr += "</rec></face>";
+  }
+
+  resultStr += "</input>";
+  return resultStr;
+}
+
+function constructTmpDetectXmlFile(imgObj, faceId) {
+  var resultStr = '<?xml version = "1.0"?><input><face><path>';
+  resultStr += imgObj.path;
+  resultStr += "</path><rec>";
+
+  resultStr += ("<x>" + imgObj.result[faceId].x + "</x>");
+  resultStr += ("<y>" + imgObj.result[faceId].y + "</y>");
+  resultStr += ("<w>" + imgObj.result[faceId].w + "</w>");
+  resultStr += ("<h>" + imgObj.result[faceId].h + "</h>");
+
+  for (j=0; j<27; j++) {
+    resultStr += "<point><x>";
+    resultStr += imgObj.result[faceId].points[j].x;
+    resultStr += "</x><y>";
+    resultStr += imgObj.result[faceId].points[j].y;
+    resultStr += "</y></point>";
+  }
+
+  resultStr += "</rec></face></input>";
   return resultStr;
 }
 
@@ -76,17 +147,33 @@ http.createServer(function (req, res) {
         switch (fields.method) {
           case 'create_session' :
             var new_id = sessionQueue.length;
-            sessionQueue.push({id : new_id});
-            fs.mkdir('/home/liuyuxuan/dev/node/nTrain/session/'+new_id, function(){
-              res.end(JSON.stringify({
-                sessionId : new_id
-              }));
-              sessionQueue[new_id].sessionPath = '/home/liuyuxuan/dev/node/nTrain/session/'+new_id;
+            sessionQueue.push({
+              id : new_id,
+              training : -1 // -1:not have been trained, 0:training, 1:trained
+            });
+            fs.mkdir(currentDirectory + 'session/' + new_id, function(){
+              res.end(JSON.stringify({ sessionId : new_id }));
+
+              sessionQueue[new_id].sessionPath = currentDirectory + 'session/' + new_id;
               sessionQueue[new_id].imgArr = new Array();
-              fs.mkdir('/home/liuyuxuan/dev/node/nTrain/session/'+new_id+'/images', function(){
-                fs.mkdir('/home/liuyuxuan/dev/node/nTrain/session/'+new_id+'/xml', function(){} );
+              fs.mkdir( currentDirectory + 'session/' + new_id + '/images', function(){
+                fs.mkdir(currentDirectory + 'session/' + new_id + '/xml', function(){
+                  fs.mkdir(currentDirectory + 'session/' + new_id + '/model', function(){});
+                });
               });
             })
+            return;
+
+          case 'check_session_status' :
+            var thisSessionId = parseInt(fields.session_id);
+            if (thisSessionId >=0 && thisSessionId < sessionQueue.length){
+              res.end(JSON.stringify({
+                id : thisSessionId,
+                status : sessionQueue[thisSessionId].training
+              }));
+            } else {
+              res.end("Illegal Session ID.");
+            }
             return;
 
           case 'upload_image' :
@@ -134,15 +221,14 @@ http.createServer(function (req, res) {
                 connection.on('close', function(){
                   //program end
                   connection.destroy();
-                  console.log(Date());
-                  console.log(connectionBody);
+                  console.log("[INFO] " + connectionBody);
                   var endDate = new Date();
-                  console.log("Time : "+(endDate-startDate)+"ms");
+                  console.log("[INFO] Detection Time : "+(endDate-startDate)+"ms");
                   fs.readFile(outputXmlFileName, function(err, outputXmlStr) {
                     if (err) {
-                      console.log("ERR : "+Date());
+                      console.log("[ERR] : "+Date());
                       console.log(err);
-                      res.end("Read Output File ERROR : "+outputXmlFileName);
+                      res.end("[ERR] Read Output File ERROR : "+outputXmlFileName);
                       return;
                     } else {
                       //start xml parser
@@ -151,10 +237,8 @@ http.createServer(function (req, res) {
                       xmlParser.parseComplete(outputXmlStr);
                       var imgResult = parseXmlImgData(xmlHandler.dom[1].children[0].children);
                       // var imgResult2 = parseXmlImgData(xmlHandler.dom[1].children[1].children);
-                      // console.log(xmlHandler.dom[1].children[1].children)
-                      // console.log(imgResult1);
                       //queue[imgId1].result = imgResult1;
-
+                      sessionQueue[thisSessionId].imgArr[imgId].result = imgResult;
                       responseObj = {
                         id : imgId, 
                         result : imgResult, 
@@ -170,58 +254,153 @@ http.createServer(function (req, res) {
 
             return;
 
-          // case 'compare_image' :
-          //   var imgId1 = parseInt(fields.img_id_1);
-          //   var imgId2 = parseInt(fields.img_id_2);
-          //   if ((imgId1 >= currentQueueId) || (imgId2 >= currentQueueId)) {
-          //     res.end("Illegal Image ID"); return;
-          //   }
+          case 'submit_face' :
+            var jsonObj = eval(fields.json_data);
+            var thisSessionId = parseInt(fields.session_id);
+            console.log(fields.json_data);
 
-          //   var rectId1 = parseInt(fields.rect_id_1);
-          //   var rectId2 = parseInt(fields.rect_id_2);
-          //   if ((rectId1 >= queue[imgId1].result.length) || (rectId2 >= queue[imgId2].result.length)) {
-          //     res.end("Illegal RECT ID"); return;
-          //   }
+            var xmlStr = constructFaceXmlFile(jsonObj, thisSessionId);
+            var xmlPath = currentDirectory + 'session/' + thisSessionId + "/xml/" + 'face.xml';
 
-          //   var XmlStr = constructRecXmlFile(imgId1, rectId1, imgId2, rectId2);
-          //   var recInputXmlFileName = currentDirectory + "xml/rec.input.xml";
-          //   var recOutputFileName = currentDirectory + "xml/rec.output.txt";
-          //   fs.writeFileSync(recInputXmlFileName,XmlStr);
-          //   console.log(XmlStr);
+            fs.writeFile(xmlPath, xmlStr, function(){
+              console.log(xmlStr);
+              var HPPath = currentDirectory + "session/" + thisSessionId + "/model/hparas";
+              var HMPath = currentDirectory + "session/" + thisSessionId + "/model/hmodel";
+              var HPBPath = currentDirectory + "session/" + thisSessionId + "/model/hparas.bin";
+              var HMBPath = currentDirectory + "session/" + thisSessionId + "/model/hmodel.bin";
 
-          //   var startDate = new Date();
-          //   var connection = new net.Socket();
-          //   var connectionBody = '';
-          //   connection.connect(socketServerPort,socketServerIP);
-          //   connection.write(recInputXmlFileName + "#" + recOutputFileName + "#" + "recognition");
-          //   connection.on('data', function(d){connectionBody += d});
+              process.chdir(trainDirectory);
+              var startDate = new Date();
+              var newTrainProcess = spawn("./process.sh", [
+                xmlPath, HPPath, HMPath, HPBPath, HMBPath ]);
+              process.chdir(currentDirectory);
 
-          //   connection.on('close',function(){
-          //     connection.destroy();
-          //     console.log(connectionBody);
-          //     var endDate = new Date();
-          //     console.log("Time : "+(endDate-startDate)+"ms");
-          //     fs.readFile(recOutputFileName, function(err, outputStr){
-          //       console.log("start read file 2");
-          //       if (err) {
-          //         console.log("ERR : "+Date());
-          //         console.log(err);
-          //         res.end("Read Output File ERROR : " + recOutputFileName);
-          //         return;
-          //       } else {
-          //         var resultNumber = parseFloat(outputStr + "");
-          //         console.log("Result : " + resultNumber);
+              res.end("Training...");
 
-          //         responseObj = {
-          //           result : resultNumber,
-          //           time : (endDate-startDate)
-          //         };
+              sessionQueue[thisSessionId].training = 0;
+              newTrainProcess.stdout.on('data', function(data){
+                console.log("[SHELL] " + data);
+              });
+              newTrainProcess.stderr.on('data', function(data){
+                console.log("[STDERR] : " + data);
+              });
 
-          //         res.end(JSON.stringify(responseObj));
-          //       }
-          //     });
-          //   });
-          //   return;
+              newTrainProcess.on('close', function(){
+                var endDate = new Date();
+                console.log('[INFO] train end. Time: ' + (endDate - startDate) + "ms");
+                sessionQueue[thisSessionId].training = 1;
+              });
+
+            });
+            return;
+
+          case 'detect_tmp_face' :
+            if (! files.imgfile){
+              res.end("File not uploaded, use 'imgfile' field.");
+              return;
+            }
+
+            var tmpImgId = tmpImageQueue.length;
+            tmpImageQueue[tmpImgId] = {};
+            var tmpImgPath = currentDirectory + files.imgfile.path;
+            tmpImageQueue[tmpImgId].path = tmpImgPath;
+            var tmpInputXmlPath = currentDirectory + "tmpxml/" + tmpImgId + ".input.xml";
+            var tmpOutputXmlPath = currentDirectory + "tmpxml/" + tmpImgId + ".output.xml";
+            fs.writeFile(tmpInputXmlPath, constructDetectXmlFile(tmpInputXmlPath), function(){
+              var startDate = new Date(); //check time here
+
+              var connection = new net.Socket();
+              var connectionBody = '';
+              connection.connect(socketServerPort,socketServerIP);
+              connection.write(tmpInputXmlPath + "#" + tmpOutputXmlPath + "#" + "detect");
+              connection.on('data', function(d){connectionBody += d});
+              connection.on('close', function(){
+                //program end
+                connection.destroy();
+                // console.log(Date());
+                // console.log(connectionBody);
+                var endDate = new Date();
+                console.log("[INFO] Detection Time : "+(endDate-startDate)+"ms");
+                fs.readFile(tmpOutputXmlPath, function(err, outputXmlStr) {
+                  if (err) {
+                    console.log("[ERR] : "+Date());
+                    console.log(err);
+                    res.end("[ERR] Read Output File ERROR : "+tmpOutputXmlPath);
+                    return;
+                  } else {
+                    //start xml parser
+                    var xmlHandler = new htmlparser.DefaultHandler(function (error, dom){ }, { verbose: false, ignoreWhitespace: true });
+                    var xmlParser = new htmlparser.Parser(xmlHandler);
+                    xmlParser.parseComplete(outputXmlStr);
+                    var imgResult = parseXmlImgData(xmlHandler.dom[1].children[0].children);
+                    tmpImageQueue[tmpImgId] = {};
+                    tmpImageQueue[tmpImgId].result = imgResult;
+                    // sessionQueue[thisSessionId].imgArr[imgId].result = imgResult;
+                    responseObj = {
+                      id : tmpImgId, 
+                      result : imgResult, 
+                      time : (endDate-startDate)
+                    };
+                    
+                    res.end(JSON.stringify(responseObj));
+                  }
+                });
+              });
+            });
+
+            return;
+
+          case 'compare_image' :
+            var imgId = parseInt(fields.img_id);
+            if (imgId1 >= tmpImageQueue.length) {
+              res.end("Illegal Image ID"); return;
+            }
+
+            var faceId = parseInt(fields.face_id);
+            if (faceId >= tmpImageQueue[imgId].result.length) {
+              res.end("Illegal Face ID"); return;
+            }
+
+            // var XmlStr = constructRecXmlFile(imgId1, rectId1, imgId2, rectId2);
+            var xmlStr = constructTmpDetectXmlFile(tmpImageQueue[imgId], faceId);
+            console.log("[XML] : " + xmlStr);
+            var recInputXmlFileName = currentDirectory + "xml/rec.input.xml";
+            var recOutputFileName = currentDirectory + "xml/rec.output.txt";
+            fs.writeFileSync(recInputXmlFileName,XmlStr);
+
+            // var startDate = new Date();
+            // var connection = new net.Socket();
+            // var connectionBody = '';
+            // connection.connect(socketServerPort,socketServerIP);
+            // connection.write(recInputXmlFileName + "#" + recOutputFileName + "#" + "recognition");
+            // connection.on('data', function(d){connectionBody += d});
+
+            // connection.on('close',function(){
+            //   connection.destroy();
+            //   console.log(connectionBody);
+            //   var endDate = new Date();
+            //   console.log("Time : "+(endDate-startDate)+"ms");
+            //   fs.readFile(recOutputFileName, function(err, outputStr){
+            //     console.log("start read file 2");
+            //     if (err) {
+            //       console.log("ERR : "+Date());
+            //       console.log(err);
+            //       res.end("Read Output File ERROR : " + recOutputFileName);
+            //       return;
+            //     } else {
+            //       var resultNumber = parseFloat(outputStr + "");
+            //       console.log("Result : " + resultNumber);
+
+            //       responseObj = {
+            //         result : resultNumber,
+            //         time : (endDate-startDate)
+            //       };
+
+            //       res.end(JSON.stringify(responseObj));
+            //     }
+            //   });
+            // });
+            return;
 
           default :
             res.end("Unknown method.");
@@ -238,4 +417,4 @@ http.createServer(function (req, res) {
 
 }).listen(serverPort, serverIP);
 
-console.log('Socket API server running at http://' + serverIP + ":" + serverPort + serverApiPath);
+console.log('[INFO] Socket API server running at http://' + serverIP + ":" + serverPort + serverApiPath);
