@@ -1,0 +1,20 @@
+simple api documentation:
+
+method : get_id_by_alias
+	input : alias
+	output : id
+
+	if id=-1, then it means that there's no session with this alias
+
+method : create_session
+	input : alias(optional)
+	output : session_id(new session id)
+
+	if alias is not specified, then alias is that new session id (to string).
+
+method : get_model_list
+	no input parameters
+	output : modelArr, shows all of the available models
+
+	empty array may be returned.
+

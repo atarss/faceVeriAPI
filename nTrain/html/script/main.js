@@ -321,5 +321,6 @@ function testSelectedFace(){
 
   $.post(apiAddress, postObj, function(data, textStatus, jqXHR){
     jqxConsole("[INFO] Return Data : "+JSON.stringify(data));
+    $("#compare_console").find(p).append($("<span>Score: "+data.result+" Time: "+data.time+"ms</span>"));
   }, 'json');
 }

@@ -129,6 +129,13 @@ function parseXmlImgData (imgDomObj) {
   return resultArr;
 }
 
+function getIdByAlias(aliasStr){
+  for (i=0; i<sessionQueue.length; i++){
+    if (sessionQueue[i].alias == aliasStr) return i;
+  }
+  return -1; // Not Found.
+}
+
 http.createServer(function (req, res) {
   if (req.method.toLowerCase() == "post") {
     var urlPath = urlParser(req.url).pathname;
@@ -146,11 +153,30 @@ http.createServer(function (req, res) {
           return;
         }
 
-        switch (fields.method) {
+        switch (fields.method) { // input alias
+          case 'get_id_by_alias' : 
+            var sessionAlias = fields.alias;
+            var sessionId = getIdByAlias(sessionAlias);
+            res.end(JSON.stringify({alias : sessionAlias, id : sessionId})); // -1 means not found.
+            return;
+
+          case 'get_model_list' :
+            var modelArr = new Array();
+            for (i=0; i<sessionQueue.length; i++){
+              if (sessionQueue[i].training >= 0) {
+                modelArr.push({ id : i, alias : sessionQueue[i].alias });
+              }
+            }
+            res.end(JSON.stringify(modelArr));
+            return;
+
           case 'create_session' :
-            var new_id = sessionQueue.length;
+            var sessionAlias, new_id = sessionQueue.length;
+            if (!fields.alias) sessionAlias = "" + new_id;
+            
             sessionQueue.push({
               id : new_id,
+              alias : sessionAlias,
               training : -1 // -1:not have been trained, 0:training, 1:trained
             });
             fs.mkdir(currentDirectory + 'session/' + new_id, function(){
@@ -158,12 +184,12 @@ http.createServer(function (req, res) {
 
               sessionQueue[new_id].sessionPath = currentDirectory + 'session/' + new_id;
               sessionQueue[new_id].imgArr = new Array();
-              fs.mkdir( currentDirectory + 'session/' + new_id + '/images', function(){
+              fs.mkdir(currentDirectory + 'session/' + new_id + '/images', function(){
                 fs.mkdir(currentDirectory + 'session/' + new_id + '/xml', function(){
                   fs.mkdir(currentDirectory + 'session/' + new_id + '/model', function(){});
                 });
               });
-            })
+            });
             return;
 
           case 'check_session_status' :
