@@ -190,6 +190,9 @@ http.createServer(function (req, res) {
                 });
               });
             });
+
+            console.log("[DATE] "+Date());
+            console.log("[INFO] Create Session. ID:"+new_id+", Alias:"+sessionAlias);
             return;
 
           case 'check_session_status' :

@@ -9,14 +9,32 @@
     <script src="script/jqxscrollbar.js"></script>
     <script src="script/jqxlistbox.js"></script>
     <script src="script/jqxpanel.js"></script>
+    <script src="script/message.js"></script>
     <link rel="stylesheet" href="style/bootstrap.min.css">
     <link rel="stylesheet" href="style/bootstrap-theme.min.css">
     <link rel="stylesheet" href="style/jqx.base.css">
+    <link rel="stylesheet" href="style/message_skyblue.css">
     <link rel="stylesheet" href="style/style.css">
   </head>
   <body>
     <div class="header">
       <h1>N-Train Demo</h1>
+    </div>
+    <div class="choose_box">
+      <div class="list-group">
+        <div class="list-group-item">
+          <h4>
+            Create A New Model With Name : 
+            <input type="input" id="alias_name">&nbsp;<div class="btn btn-sm btn-info" id="new_session_button">Submit</div>
+          </h4>
+        </div>
+        <div class="list-group-item" id="choose_model_box">
+          <h4>Or, Choose an exist session:</h4>
+          <div class="list-group">
+            <a href="#" class="list-group-item">Loading...</a>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="out_frame">
       <div class="left_frame">
@@ -103,6 +121,7 @@
     <script type="text/javascript">
       $("#upload_form").ajaxForm({type: 'POST'});
       $("#compare_form").ajaxForm({type: 'POST'});
+      $("#new_session_button").click(newSessionWithAlias);
 
       var wrapper = $('<div/>').css({height:0,width:0,'overflow':'hidden'});
       var fileInput = $('#img_file').wrap(wrapper);
@@ -132,20 +151,20 @@
       jqxConsole("Console : ");
       jqxConsole(Date());
 
-      $.post(apiAddress, {
-        // version : "1.0" ,
-        method : "create_session"
-      }, function(postResult) {
-        jqxConsole(JSON.stringify(postResult));
-        if (postResult.sessionId != undefined){
-          $("#bt").text("Upload File");
-          sessionId = postResult.sessionId;
-          $("#form_session_id").attr('value',sessionId)
-          hasSessionId = true;
-        } else {
-          jqxConsole("no session id! Unable to run program.")
-        }
-      }, 'json');
+      // $.post(apiAddress, {
+      //   // version : "1.0" ,
+      //   method : "create_session"
+      // }, function(postResult) {
+      //   jqxConsole(JSON.stringify(postResult));
+      //   if (postResult.sessionId != undefined){
+      //     $("#bt").text("Upload File");
+      //     sessionId = postResult.sessionId;
+      //     $("#form_session_id").attr('value',sessionId)
+      //     hasSessionId = true;
+      //   } else {
+      //     jqxConsole("no session id! Unable to run program.")
+      //   }
+      // }, 'json');
 
     </script>
   </body>

@@ -21,6 +21,21 @@ function resultFormat (obj) {
 	return str;
 }
 
+function newSessionWithAlias() {
+  var aliasStr = $("#alias_name")[0].value;
+  $("#new_session_button").text("Loading...");
+  $("#choose_model_box").animate({
+    height : 0 ,
+    padding : 0
+  }, 500, function(){ $("#choose_model_box").css("display", "none"); });
+  $.post(apiAddress, {
+    alias : aliasStr
+  }, function(result){
+    sessionId = result.sessionId;
+    hasSessionId = true;
+  }, 'json');
+}
+
 function listBoxSelectFunction(event) {
   var args = event.args;
   if (args) {
