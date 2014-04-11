@@ -6,6 +6,8 @@ var currentActiveItem = -1;
 var hasSessionId = false;
 var sessionId = -1;
 var selectedPicId = -1;
+var compareImgObj;
+var compareDetecting = 0;
 
 function jqxConsole(log){
   $("#jqx_console").jqxPanel('append', $("<span>"+log+"</span><br />"));
@@ -23,13 +25,12 @@ function listBoxSelectFunction(event) {
   var args = event.args;
   if (args) {
     selectedPicId = parseInt(args.index);
-    jqxConsole("selected Id:" + selectedPicId);
+    // jqxConsole("selected Id:" + selectedPicId);
     $("#paper_container").html('');
 
     $("#file_img").attr('src', pictureList[selectedPicId].src);
     var leftOffset = parseInt((600 - $("#file_img").width())/2);
     var picScale = $("#file_img").width() / pictureList[selectedPicId].originalWidth;
-    jqxConsole("picScale : "+picScale);
     $("#paper_container").css("left", leftOffset+"px");
 
     $("#result_console").html("");
@@ -133,7 +134,6 @@ function submitFile() {
 
     picReader.onloadend = function(){
       // Add result to list
-      jqxConsole(imgFile.name + " load end.");
       $("#jqx_listbox").jqxListBox('addItem', imgFile.name);
       var thisId = pictureList.length;
       var tmpOriginalWidth, tmpOriginalHeight;
@@ -153,11 +153,119 @@ function submitFile() {
         $("#upload_form").ajaxSubmit({
           dataType : 'json',
           success : function(resp, status, xhr, jq){
-            jqxConsole("Uploaded : "+JSON.stringify(resp));
+            // jqxConsole("Uploaded : "+JSON.stringify(resp));
             pictureList[thisId].result = resp.result;
             pictureList[thisId].time = resp.time;
           }
         });
+      }
+      tmpImg.src = this.result;
+    }
+  }
+}
+
+function submitCompareFile() {
+  $("#compare_paper_container").html("");
+  var imgFile = $("#compare_img_file")[0].files[0];
+  if (imgFile) {
+    var picReader = new FileReader();
+    picReader.readAsDataURL($("#compare_img_file")[0].files[0]);
+
+    picReader.onloadend = function(){
+      // Add result to list
+      var tmpOriginalWidth, tmpOriginalHeight;
+
+      var tmpImg = new Image();
+      tmpImg.onload = function(){
+        tmpOriginalWidth = this.width;
+        tmpOriginalHeight = this.height;
+        compareImgObj = {
+          src : picReader.result,
+          originalWidth : tmpOriginalWidth,
+          originalHeight : tmpOriginalHeight,
+          selectedId : -1
+        };
+
+        $("#compare_console").html("");
+        $("#compare_img").attr('src',compareImgObj.src);
+        compareImgObj.scale = compareImgObj.originalWidth / $("#compare_img").width();
+
+        $("#compare_form").ajaxSubmit({
+          dataType : 'json',
+          success : function(resp, status, xhr, jq){
+            $("#compare_upload").text("Choose File");
+            compareImgObj.result = resp.result;
+            compareImgObj.time = resp.time;
+            compareImgObj.serverId = resp.id;
+
+            if (compareImgObj.result.length == 0) {
+              $("#compare_console").html("<h3 style='text-align : center; color : red;'>No faces found. </h3>");
+            } else {
+              var leftOffset = parseInt((600 - $("#compare_img").width())/2);
+              $("#compare_paper_container").css('left',leftOffset+"px");
+
+              //draw face boxes here
+              var thisScale = compareImgObj.scale;
+              for (i=0; i<compareImgObj.result.length; i++){
+                $("#compare_paper_container").prepend("<div class='pic_paper_container' id='compare_box_container_"+i+"'></div>");
+                $("#compare_box_container_"+i).prepend("<div class='pic_paper_box' id='compare_box_"+i+"'></div>");
+
+                $("#compare_box_"+i).width(parseInt(compareImgObj.result[i].w*thisScale)).height(parseInt(compareImgObj.result[i].h*thisScale));
+                $("#compare_box_"+i).css('left',parseInt(compareImgObj.result[i].x*thisScale)).css('top',parseInt(compareImgObj.result[i].y*thisScale));
+
+                $("#compare_box_"+i).prepend("<canvas id='compare_canvas_"+i+"' width="+parseInt(compareImgObj.result[i].w*thisScale)+" height="+parseInt(compareImgObj.result[i].h*thisScale)+" />");
+                var tmpCanvas = document.getElementById('compare_canvas_'+i).getContext("2d");
+                for (j=0;j<27;j++){
+                  var transX = (compareImgObj.result[i].points[j].x - compareImgObj.result[i].x)*thisScale;
+                  var transY = (compareImgObj.result[i].points[j].y - compareImgObj.result[i].y)*thisScale;
+                  tmpCanvas.beginPath();
+                  tmpCanvas.arc(transX, transY, 1, 0, 2*Math.PI);
+                  tmpCanvas.fillStyle = 'red';
+                  tmpCanvas.fill();
+                }
+
+                $("#compare_box_"+i).mouseenter(function(){
+                  var thisId = parseInt($(this).attr("id").slice(12));
+                  if (compareImgObj.selectedId != thisId) {
+                    $(this).css('background-color','rgba(255,255,255,0.5)');
+                    $(this).find("canvas").css("display", "inline-block");
+                  }
+                }).mouseleave(function(){
+                  var thisId = parseInt($(this).attr("id").slice(12));
+                  if (compareImgObj.selectedId != thisId) {
+                    $(this).css('background-color','transparent');
+                    $(this).find("canvas").css("display", "none");
+                  }
+                }).click(function(){
+                  var thisId = parseInt($(this).attr("id").slice(12));
+                  if (compareImgObj.selectedId != thisId) {
+                    // select this face
+                    $("#compare_box_"+compareImgObj.selectedId).css('border-color','black').css('background-color','transparent').find('canvas').css('display','none');
+                    $(this).css('border-color','red').css('background-color','rgba(255,255,255,0.5)');
+                    $(this).find("canvas").css("display", "inline-block");
+                    compareImgObj.selectedId = thisId;
+
+                    var tmpStr = "<p>";
+                    tmpStr += "Picture Size : "+compareImgObj.originalWidth+"x"+compareImgObj.originalHeight;
+                    tmpStr += '<br />';
+                    tmpStr += "Face Size : "+compareImgObj.result[thisId].w+"x"+compareImgObj.result[thisId].h;
+                    tmpStr += "<br />";
+                    tmpStr += "Detection Time : "+compareImgObj.time+"ms";
+                    tmpStr += "</p>";
+
+                    $("#compare_console").html(tmpStr);
+                  } else {
+                    compareImgObj.selectedId = -1;
+                    $(this).css('border-color','black');
+                    $("#compare_console").html("<p style='text-align : center'>Please Select a Face...</p>");
+                  }
+                });
+              }
+            }
+          }
+        });
+
+        $("#compare_upload").text("Loading...");
       }
       tmpImg.src = this.result;
     }
@@ -187,8 +295,6 @@ function submitFaces(){
     }
 
     var jsonStr = JSON.stringify(faceArr);
-    jqxConsole("[JSON] " + jsonStr);
-
     $.post(apiAddress, {
       method : "submit_face",
       json_data : jsonStr,
@@ -201,51 +307,19 @@ function submitFaces(){
     jqxConsole("[ERR] No enough faces...");
   }
 }
-// if (imgFile && (pictureList.length < 20)) {
-//   $("#upload_form").ajaxSubmit({
-//     dataType : 'json',
-//     success : function(resp,status,xhr,jq){
-//     	var newIdNumber = pictureList.length;
-//     	var picReader = new FileReader();
-//     	picReader.readAsDataURL($("#img_file")[0].files[0]);
 
-//     	picReader.onloadend = function(){
-//       	// Add result to list
-//       	var newArrObj = {
-//       		domId : "pic_"+newIdNumber,
-//       		serverId : eval(resp).id,
-//       		picData : picReader.result,
-//       		fileName : imgFile.name
-//       	};
-//       	pictureList.push(newArrObj);
+function testSelectedFace(){
+  var imgId = compareImgObj.serverId;
+  var faceId = compareImgObj.selectedId;
+  var postObj = {
+    method : "compare_image",
+    face_id : faceId,
+    img_id : imgId,
+    session_id : sessionId
+  };
+  jqxConsole("[POST] "+JSON.stringify(postObj));
 
-//       	//create new DOM node
-//       	var newDomId = newArrObj.domId;
-//       	var newDomText = "#"+(newIdNumber+1)+": "+newArrObj.fileName;
-//       	$("#picture_list").append("<a id='"+newDomId+"' class='list-group-item' href='#'>"+newDomText+"</a>");
-
-//       	$("#"+newDomId).click(function(){
-//       		if (currentActiveItem >= 0) $("#pic_"+currentActiveItem).attr('class', 'list-group-item');
-//       		$(this).attr('class', 'list-group-item active');
-//       		currentActiveItem = newIdNumber;
-//       		var index = parseInt(newDomId.slice(4));
-//       		$("#file_name").text(pictureList[index].fileName);
-//       		$("#file_img").attr("src",pictureList[index].picData);
-//       		$("#file_status").text("Loading...");
-//       		$.post("http://123.127.237.160:8080/image_api",{
-//         		'version' : '1.0',
-//         		'method' : 'check_image',
-//         		'id' : pictureList[index].serverId
-//       		}, function(d){
-//         		$("#file_status").text(d.status);
-//         		if (d.status.toLowerCase() == 'done') {
-//           			$("#file_result").text(resultFormat(d.result));
-//         		} else {
-//           			$("#file_result").text("---");
-//         		}
-//       		}, 'json');
-//       	});
-//     	};
-//     }
-//   });
-// }
+  $.post(apiAddress, postObj, function(data, textStatus, jqXHR){
+    jqxConsole("[INFO] Return Data : "+JSON.stringify(data));
+  }, 'json');
+}

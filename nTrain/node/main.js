@@ -4,6 +4,7 @@
 
 var currentDirectory = "/home/liuyuxuan/dev/node/nTrain/";
 var trainDirectory = '/home/liuyuxuan/dev/Identification/project/HFeature/';
+var compareDirectory = '/home/liuyuxuan/dev/Identification/project/recognize';
 var serverIP = "10.193.251.172";
 var serverPort = 8082;
 var serverApiPath = '/ntrain_api';
@@ -81,6 +82,7 @@ function constructFaceXmlFile (faceObj, sessionId) {
 
 function constructTmpDetectXmlFile(imgObj, faceId) {
   var resultStr = '<?xml version = "1.0"?><input><face><path>';
+  console.log("[DEBUG] "+JSON.stringify(imgObj));
   resultStr += imgObj.path;
   resultStr += "</path><rec>";
 
@@ -269,10 +271,9 @@ http.createServer(function (req, res) {
               var HPBPath = currentDirectory + "session/" + thisSessionId + "/model/hparas.bin";
               var HMBPath = currentDirectory + "session/" + thisSessionId + "/model/hmodel.bin";
 
-              process.chdir(trainDirectory);
               var startDate = new Date();
-              var newTrainProcess = spawn("./process.sh", [
-                xmlPath, HPPath, HMPath, HPBPath, HMBPath ]);
+              process.chdir(trainDirectory);
+              var newTrainProcess = spawn("./process.sh", [ xmlPath, HPPath, HMPath, HPBPath, HMBPath ]);
               process.chdir(currentDirectory);
 
               res.end("Training...");
@@ -306,7 +307,7 @@ http.createServer(function (req, res) {
             tmpImageQueue[tmpImgId].path = tmpImgPath;
             var tmpInputXmlPath = currentDirectory + "tmpxml/" + tmpImgId + ".input.xml";
             var tmpOutputXmlPath = currentDirectory + "tmpxml/" + tmpImgId + ".output.xml";
-            fs.writeFile(tmpInputXmlPath, constructDetectXmlFile(tmpInputXmlPath), function(){
+            fs.writeFile(tmpInputXmlPath, constructDetectXmlFile(tmpImgPath), function(){
               var startDate = new Date(); //check time here
 
               var connection = new net.Socket();
@@ -333,7 +334,6 @@ http.createServer(function (req, res) {
                     var xmlParser = new htmlparser.Parser(xmlHandler);
                     xmlParser.parseComplete(outputXmlStr);
                     var imgResult = parseXmlImgData(xmlHandler.dom[1].children[0].children);
-                    tmpImageQueue[tmpImgId] = {};
                     tmpImageQueue[tmpImgId].result = imgResult;
                     // sessionQueue[thisSessionId].imgArr[imgId].result = imgResult;
                     responseObj = {
@@ -351,55 +351,57 @@ http.createServer(function (req, res) {
             return;
 
           case 'compare_image' :
-            var imgId = parseInt(fields.img_id);
-            if (imgId1 >= tmpImageQueue.length) {
-              res.end("Illegal Image ID"); return;
+            var sessionId = parseInt(fields.session_id);
+            if ((sessionId >= sessionQueue.length) || (sessionId < 0)) {
+              res.end("Illegal Session ID"); return;
+            }
+            if (sessionQueue[sessionId].training < 1) {
+              res.end("Model not Trained."); return; 
             }
 
+            var imgId = parseInt(fields.img_id);
+            if ((imgId >= tmpImageQueue.length) || (imgId < 0)) {
+              res.end("Illegal Image ID"); return;
+            }
             var faceId = parseInt(fields.face_id);
-            if (faceId >= tmpImageQueue[imgId].result.length) {
+            if ((faceId >= tmpImageQueue[imgId].result.length) || (faceId < 0)) {
               res.end("Illegal Face ID"); return;
             }
 
-            // var XmlStr = constructRecXmlFile(imgId1, rectId1, imgId2, rectId2);
             var xmlStr = constructTmpDetectXmlFile(tmpImageQueue[imgId], faceId);
-            console.log("[XML] : " + xmlStr);
-            var recInputXmlFileName = currentDirectory + "xml/rec.input.xml";
-            var recOutputFileName = currentDirectory + "xml/rec.output.txt";
-            fs.writeFileSync(recInputXmlFileName,XmlStr);
+            var recInputXmlFileName = currentDirectory + "tmpxml/rec.input.xml";
+            var recOutputFileName = currentDirectory + "tmpxml/rec.output.txt";
+            console.log("[XML] " + recInputXmlFileName + " : " + xmlStr);
+            fs.writeFileSync(recInputXmlFileName, xmlStr);
 
-            // var startDate = new Date();
-            // var connection = new net.Socket();
-            // var connectionBody = '';
-            // connection.connect(socketServerPort,socketServerIP);
-            // connection.write(recInputXmlFileName + "#" + recOutputFileName + "#" + "recognition");
-            // connection.on('data', function(d){connectionBody += d});
+            var HPBPath = currentDirectory + "session/" + sessionId + "/model/hparas.bin";
+            var HMBPath = currentDirectory + "session/" + sessionId + "/model/hmodel.bin";
+            console.log("HPBPath " + HPBPath);
+            console.log("HMBPath " + HMBPath);
 
-            // connection.on('close',function(){
-            //   connection.destroy();
-            //   console.log(connectionBody);
-            //   var endDate = new Date();
-            //   console.log("Time : "+(endDate-startDate)+"ms");
-            //   fs.readFile(recOutputFileName, function(err, outputStr){
-            //     console.log("start read file 2");
-            //     if (err) {
-            //       console.log("ERR : "+Date());
-            //       console.log(err);
-            //       res.end("Read Output File ERROR : " + recOutputFileName);
-            //       return;
-            //     } else {
-            //       var resultNumber = parseFloat(outputStr + "");
-            //       console.log("Result : " + resultNumber);
+            var startDate = new Date();
+            process.chdir(compareDirectory);
+            var compareProcess = spawn("perl", [ "single.pl", recInputXmlFileName, HMBPath, HPBPath, recOutputFileName ]);
+            process.chdir(currentDirectory);
+            compareProcess.stdout.on('data', function(data){
+              console.log("[SHELL] " + data);
+            });
+            compareProcess.stderr.on('data', function(data){
+              console.log("[STDERR] : " + data);
+            });
 
-            //       responseObj = {
-            //         result : resultNumber,
-            //         time : (endDate-startDate)
-            //       };
+            compareProcess.on('close', function(){
+              var endDate = new Date();
+              console.log('[INFO] compare end. Time: ' + (endDate - startDate) + "ms");
+              var resultStr = fs.readFileSync(recOutputFileName);
+              console.log("" + resultStr);
+              var resultNumber = parseFloat(resultStr + "");
+              res.end(JSON.stringify({
+                result : resultNumber,
+                time : (endDate - startDate)
+              }));
+            });
 
-            //       res.end(JSON.stringify(responseObj));
-            //     }
-            //   });
-            // });
             return;
 
           default :
