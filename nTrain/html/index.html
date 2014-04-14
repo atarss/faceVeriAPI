@@ -31,6 +31,9 @@
         <div class="list-group-item" id="choose_model_box">
           <h4>Or, Choose an exist session:</h4>
           <div id="jqx_model_list"></div>
+          <div class="choose_model_button_box">
+            <div class="btn btn-lg btn-info" id="choose_a_model">Choose this model</div>
+          </div>
         </div>
       </div>
     </div>
@@ -143,33 +146,22 @@
       $("#jqx_model_list").jqxListBox({
         source : [],
         width: '946px',
-        height: '300px'
+        height: '200px'
       });
 
       $("#jqx_listbox").jqxListBox({itemHeight: 40});
+      $("#jqx_model_list").jqxListBox({itemHeight: 40});
       $("#jqx_listbox").on('select', listBoxSelectFunction);
 
       $("#submit_face_button").click(submitFaces);
+      $("#choose_a_model").click(chooseSelectedModel);
+
       // init
       $("#jqx_console").jqxPanel({ width: 980, height: 150});
       jqxConsole("Console : ");
       jqxConsole(Date());
 
-      // $.post(apiAddress, {
-      //   // version : "1.0" ,
-      //   method : "create_session"
-      // }, function(postResult) {
-      //   jqxConsole(JSON.stringify(postResult));
-      //   if (postResult.sessionId != undefined){
-      //     $("#bt").text("Upload File");
-      //     sessionId = postResult.sessionId;
-      //     $("#form_session_id").attr('value',sessionId)
-      //     hasSessionId = true;
-      //   } else {
-      //     jqxConsole("no session id! Unable to run program.")
-      //   }
-      // }, 'json');
-
+      loadExistModels();
     </script>
   </body>
 </html>

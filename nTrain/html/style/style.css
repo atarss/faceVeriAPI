@@ -54,11 +54,11 @@
 	padding: 10px;
 }
 
-.compare_frame {
+.compare_face_box {
 	width: 1000px;
 	/*height: 700px;
 	padding: 10px;*/
-	height: 0px; /* Hidden at first */
+	height: 0px;
 	padding: 0px;
 	margin-left: auto;
 	margin-right: auto;
@@ -104,6 +104,18 @@
 	width: 600px;
 	margin-left: auto;
 	margin-right: auto;
+}
+
+.choose_model_button_box{
+	width: 200px;
+	margin-left: auto;
+	margin-right : auto;
+	margin-top: 15px;
+	margin-bottom: 5px;
+}
+
+#choose_a_model{
+	width: 200px;
 }
 
 canvas {

@@ -6,21 +6,61 @@ var currentActiveItem = -1;
 var hasSessionId = false;
 var sessionId = -1;
 var selectedPicId = -1;
-var compareImgObj;
 var compareDetecting = 0;
 var checkIntervelId = -1;
 var defaultAnimationLength = 500;
+var compareImgObj, existModelList;
 
-function jqxConsole(log){
+
+function jqxConsole(log) {
   $("#jqx_console").jqxPanel('append', $("<span>"+log+"</span><br />"));
 }
 
-function resultFormat (obj) {
+function spaceN(n){
+  var str = "";
+  for (i=0;i<n;i++){
+    str += "&nbsp;";
+  }
+  return str;
+}
+
+function resultFormat(obj) {
 	var str = "";
 	for (i=0; i<5; i++){
 		str += ("<br />" + worddata[obj.id[i]] + " : " + obj.number[i]);
 	}
 	return str;
+}
+
+function loadExistModels() {
+  $.post(apiAddress, {
+    method : 'get_model_list',
+  }, function(data){
+    if (data.length) {
+      existModelList = data;
+      for (i=0; i<data.length; i++) {
+        var listName = "Name: " + data[i].alias + " ID: " + data[i].id;
+        $("#jqx_model_list").jqxListBox('addItem', listName);
+      } 
+    }
+  }, 'json');
+}
+
+function chooseSelectedModel(){
+  var selectedModelIndex = $("#jqx_model_list").jqxListBox("selectedIndex");
+  sessionId = existModelList[selectedModelIndex].id;
+  $("#form_session_id").attr('value', selectedModelIndex);
+
+  //animation here
+  $(".choose_box").animate({
+    height : "0px"
+  }, function(){
+    $(this).css('display', 'none');
+  }); 
+
+  $(".compare_face_box").css('display', 'block').animate({
+    height : '700px'
+  });
 }
 
 function newSessionWithAlias() {
@@ -49,7 +89,6 @@ function newSessionWithAlias() {
 
     $(".out_frame").animate({ height : '750px' }, defaultAnimationLength);
     $(".submit_face_box").css('display', 'block').animate({ height : '50px'}, defaultAnimationLength);
-
   }, 'json');
 }
 
@@ -166,15 +205,25 @@ function checkTrainingInfo(){
     jqxConsole("Training Status: "+data.status);
     if (data.status == 1){
       clearInterval(checkIntervelId);
+      $(".out_frame").animate({
+        height : '0px',
+        padding : '0px'
+      }, defaultAnimationLength, function(){
+        $(this).css('display', 'none');
+      });
+
+      $(".submit_face_box").animate({ height : '0px' }, defaultAnimationLength, function(){
+        $(this).css('display', 'none');
+      });
 
       $(".compare_face_box").css('display', 'block').animate({
         height : '700px',
         padding : '10px'
       }, function(){
-        //Train end...
+        //
       }) ;
     } else {
-      jqxConsole("Still Training...");
+      jqxConsole("Still Training... "+Date());
     }
   }, 'json');
 }
@@ -300,9 +349,9 @@ function submitCompareFile() {
 
                     var tmpStr = "<p>";
                     tmpStr += "Picture Size : "+compareImgObj.originalWidth+"x"+compareImgObj.originalHeight;
-                    tmpStr += '<br />';
+                    tmpStr += spaceN(10);
                     tmpStr += "Face Size : "+compareImgObj.result[thisId].w+"x"+compareImgObj.result[thisId].h;
-                    tmpStr += "<br />";
+                    tmpStr += spaceN(10);
                     tmpStr += "Detection Time : "+compareImgObj.time+"ms";
                     tmpStr += "</p>";
 
@@ -378,6 +427,6 @@ function testSelectedFace(){
 
   $.post(apiAddress, postObj, function(data, textStatus, jqXHR){
     jqxConsole("[INFO] Return Data : "+JSON.stringify(data));
-    $("#compare_console").find(p).append($("<span>Score: "+data.result+" Time: "+data.time+"ms</span>"));
+    $("#compare_console").find("p").append($("<br /><h3>Score: "+data.result+" Time: "+data.time+"ms</h3>"));
   }, 'json');
 }
