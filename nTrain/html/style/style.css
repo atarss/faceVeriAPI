@@ -16,7 +16,9 @@
 	margin-left: auto;
 	margin-right: auto;
 	width: 1000px;
-	height: 750px;
+	height: 0px; 
+	/*height: 750px;*/
+	display: none;
 }
 
 .left_frame {
@@ -54,10 +56,13 @@
 
 .compare_frame {
 	width: 1000px;
-	height: 700px;
-	padding: 10px;
+	/*height: 700px;
+	padding: 10px;*/
+	height: 0px; /* Hidden at first */
+	padding: 0px;
 	margin-left: auto;
 	margin-right: auto;
+	display: none;
 }
 
 .compare_button_box {
@@ -84,8 +89,10 @@
 	width: 1000px;
 	margin-left: auto;
 	margin-right: auto;
-	height : 50px;
+	/*height : 50px;*/
+	height: 0px;
 	margin-bottom: 20px;
+	display: none;
 }
 
 .result_button_box {

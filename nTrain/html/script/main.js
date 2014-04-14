@@ -8,6 +8,8 @@ var sessionId = -1;
 var selectedPicId = -1;
 var compareImgObj;
 var compareDetecting = 0;
+var checkIntervelId = -1;
+var defaultAnimationLength = 500;
 
 function jqxConsole(log){
   $("#jqx_console").jqxPanel('append', $("<span>"+log+"</span><br />"));
@@ -29,10 +31,25 @@ function newSessionWithAlias() {
     padding : 0
   }, 500, function(){ $("#choose_model_box").css("display", "none"); });
   $.post(apiAddress, {
-    alias : aliasStr
+    alias : aliasStr,
+    method : "create_session"
   }, function(result){
     sessionId = result.sessionId;
+    $('new_session_button').text("Submit");
+    $('#form_session_id').attr('value', sessionId);
     hasSessionId = true;
+
+    //animate to display train panel
+    $(".out_frame").css("display","block");
+    $(".choose_box").animate({
+      height : '0px'
+    }, defaultAnimationLength, function(){
+      $(".choose_box").css('display', 'none');
+    });
+
+    $(".out_frame").animate({ height : '750px' }, defaultAnimationLength);
+    $(".submit_face_box").css('display', 'block').animate({ height : '50px'}, defaultAnimationLength);
+
   }, 'json');
 }
 
@@ -141,6 +158,27 @@ function listBoxSelectFunction(event) {
   }
 }
 
+function checkTrainingInfo(){
+  $.post(apiAddress, {
+    method : 'check_session_status',
+    session_id : sessionId
+  }, function(data){
+    jqxConsole("Training Status: "+data.status);
+    if (data.status == 1){
+      clearInterval(checkIntervelId);
+
+      $(".compare_face_box").css('display', 'block').animate({
+        height : '700px',
+        padding : '10px'
+      }, function(){
+        //Train end...
+      }) ;
+    } else {
+      jqxConsole("Still Training...");
+    }
+  }, 'json');
+}
+
 function submitFile() {
   var imgFile = $("#img_file")[0].files[0];
   if (imgFile && (pictureList.length < 20)) {
@@ -203,7 +241,7 @@ function submitCompareFile() {
 
         $("#compare_console").html("");
         $("#compare_img").attr('src',compareImgObj.src);
-        compareImgObj.scale = compareImgObj.originalWidth / $("#compare_img").width();
+        compareImgObj.scale = $("#compare_img").width() / compareImgObj.originalWidth;
 
         $("#compare_form").ajaxSubmit({
           dataType : 'json',
@@ -316,6 +354,10 @@ function submitFaces(){
       session_id : sessionId
     }, function(data, textStatus, jqXHR){
       jqxConsole(JSON.stringify(data));
+
+      //set checkIntervelId
+      $("#submit_face_button").text("Training...");
+      checkIntervelId = setInterval(checkTrainingInfo, 1000);
     }, 'json');
 
   } else {

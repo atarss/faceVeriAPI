@@ -30,9 +30,7 @@
         </div>
         <div class="list-group-item" id="choose_model_box">
           <h4>Or, Choose an exist session:</h4>
-          <div class="list-group">
-            <a href="#" class="list-group-item">Loading...</a>
-          </div>
+          <div id="jqx_model_list"></div>
         </div>
       </div>
     </div>
@@ -46,7 +44,7 @@
             <div class="panel-body">
               <br />
               <form action="http://10.193.251.172:8082/ntrain_api" enctype="multipart/form-data" id="upload_form" method="post">
-                <div class="btn btn-lg btn-info" id="bt">Loading...</div>
+                <div class="btn btn-lg btn-info" id="bt">Upload</div>
                 <input type="file" name="imgfile" accept="image/jpeg" style="display:none" id="img_file">
                 <input type="hidden" name="version" value="1.0">
                 <input type="hidden" name="method" value="upload_image">
@@ -140,6 +138,12 @@
         source: [],
         width: '326px', 
         height: '455px'
+      });
+
+      $("#jqx_model_list").jqxListBox({
+        source : [],
+        width: '946px',
+        height: '300px'
       });
 
       $("#jqx_listbox").jqxListBox({itemHeight: 40});

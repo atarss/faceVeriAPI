@@ -172,7 +172,11 @@ http.createServer(function (req, res) {
 
           case 'create_session' :
             var sessionAlias, new_id = sessionQueue.length;
-            if (!fields.alias) sessionAlias = "" + new_id;
+            if (!fields.alias) {
+              sessionAlias = "" + new_id;
+            } else {
+              sessionAlias = fields.alias;
+            }
             
             sessionQueue.push({
               id : new_id,
@@ -305,7 +309,7 @@ http.createServer(function (req, res) {
               var newTrainProcess = spawn("./process.sh", [ xmlPath, HPPath, HMPath, HPBPath, HMBPath ]);
               process.chdir(currentDirectory);
 
-              res.end("Training...");
+              res.end(JSON.stringify({result : 1}));
 
               sessionQueue[thisSessionId].training = 0;
               newTrainProcess.stdout.on('data', function(data){
