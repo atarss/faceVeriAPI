@@ -42,6 +42,9 @@ function loadExistModels() {
         var listName = "Name: " + data[i].alias + " ID: " + data[i].id;
         $("#jqx_model_list").jqxListBox('addItem', listName);
       } 
+    } else {
+      $("#jqx_model_list").jqxListBox('addItem', "No Exist Face Models... Please create a new model.");
+      $("#jqx_model_list").jqxListBox({ disabled: true }); 
     }
   }, 'json');
 }
@@ -50,15 +53,20 @@ function chooseModelSelectFunc(event){
   var thisIndex = event.args.index;
   var sessionId = existModelList[thisIndex].id;
 
+  if ($(".demo_img_box").css('display') == "none") {
+    //animate to display it 
+    $(".demo_img_box").css('display', 'block');
+    $(".demo_img_box").animate({height : '116px'}, defaultAnimationLength);
+  }
+
   for (i=0;i<8;i++) {
+    $("#demo_img_"+i).attr('src', '');
     $.post(apiAddress, {
       method : "get_img_base64",
       session_id : sessionId,
       img_id : i
     }, function(data){
       var imgId = data.img_id;
-      //jqxConsole("[INFO] "+imgDomId);
-      console.log(data.base64_str);
       $("#demo_img_"+imgId).attr('src', "data:image/jpeg;base64,"+data.base64_str);
     }, 'json');
   }
@@ -68,9 +76,6 @@ function chooseSelectedModel(){
   var selectedModelIndex = $("#jqx_model_list").jqxListBox("selectedIndex");
   sessionId = existModelList[selectedModelIndex].id;
   $("#form_session_id").attr('value', selectedModelIndex);
-
-  //display demo pictures
-  
 
   //animation here
   $(".choose_box").animate({
@@ -117,7 +122,6 @@ function listBoxSelectFunction(event) {
   var args = event.args;
   if (args) {
     selectedPicId = parseInt(args.index);
-    // jqxConsole("selected Id:" + selectedPicId);
     $("#paper_container").html('');
 
     $("#file_img").attr('src', pictureList[selectedPicId].src);
@@ -223,7 +227,7 @@ function checkTrainingInfo(){
     method : 'check_session_status',
     session_id : sessionId
   }, function(data){
-    jqxConsole("Training Status: "+data.status);
+    // jqxConsole("Training Status: "+data.status);
     if (data.status == 1){
       clearInterval(checkIntervelId);
       $(".out_frame").animate({
@@ -244,7 +248,7 @@ function checkTrainingInfo(){
         //
       }) ;
     } else {
-      jqxConsole("Still Training... "+Date());
+      // jqxConsole("Still Training... "+Date());
     }
   }, 'json');
 }
@@ -276,7 +280,6 @@ function submitFile() {
         $("#upload_form").ajaxSubmit({
           dataType : 'json',
           success : function(resp, status, xhr, jq){
-            // jqxConsole("Uploaded : "+JSON.stringify(resp));
             pictureList[thisId].result = resp.result;
             pictureList[thisId].time = resp.time;
           }
@@ -405,7 +408,7 @@ function validFacesNumber(){
 }
 
 function submitFaces(){
-  jqxConsole("[INFO] " + validFacesNumber());
+  // jqxConsole("[INFO] " + validFacesNumber());
   if (validFacesNumber() >= 8) {
     var faceArr = new Array();
     for (i=0; i<pictureList.length; i++){
@@ -423,15 +426,16 @@ function submitFaces(){
       json_data : jsonStr,
       session_id : sessionId
     }, function(data, textStatus, jqXHR){
-      jqxConsole(JSON.stringify(data));
-
       //set checkIntervelId
       $("#submit_face_button").text("Training...");
       checkIntervelId = setInterval(checkTrainingInfo, 1000);
     }, 'json');
 
   } else {
-    jqxConsole("[ERR] No enough faces...");
+    // jqxConsole("[ERR] No enough faces...");
+
+    //TODO: ADD ERR Alert Here!
+    dhtmlx.alert("[ERROR] No enough faces. Please choose more than 8 faces");
   }
 }
 
@@ -444,10 +448,10 @@ function testSelectedFace(){
     img_id : imgId,
     session_id : sessionId
   };
-  jqxConsole("[POST] "+JSON.stringify(postObj));
+  // jqxConsole("[POST] "+JSON.stringify(postObj));
 
   $.post(apiAddress, postObj, function(data, textStatus, jqXHR){
-    jqxConsole("[INFO] Return Data : "+JSON.stringify(data));
+    // jqxConsole("[INFO] Return Data : "+JSON.stringify(data));
     $("#compare_console").find("p").append($("<br /><h3>Score: "+data.result+" Time: "+data.time+"ms</h3>"));
   }, 'json');
 }

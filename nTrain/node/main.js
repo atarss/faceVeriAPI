@@ -296,9 +296,10 @@ http.createServer(function (req, res) {
 
             var xmlStr = constructFaceXmlFile(jsonObj, thisSessionId);
             var xmlPath = currentDirectory + 'session/' + thisSessionId + "/xml/" + 'face.xml';
-
+            // console.log(JSON.stringify(jsonObj));
+            sessionQueue[thisSessionId].trainPics = jsonObj;
             fs.writeFile(xmlPath, xmlStr, function(){
-              console.log(xmlStr);
+              // console.log(xmlStr);
               var HPPath = currentDirectory + "session/" + thisSessionId + "/model/hparas";
               var HMPath = currentDirectory + "session/" + thisSessionId + "/model/hmodel";
               var HPBPath = currentDirectory + "session/" + thisSessionId + "/model/hparas.bin";
@@ -439,8 +440,8 @@ http.createServer(function (req, res) {
             return;
           case 'get_img_base64' : 
             var sessionId = parseInt(fields.session_id);
-            var imgId = parseInt(fields.img_id);
-
+            var oldImgId = parseInt(fields.img_id);
+            var imgId = sessionQueue[sessionId].trainPics[oldImgId].picId;
             var imgPath = sessionQueue[sessionId].imgArr[imgId].fileName;
             // console.log("[INFO] get img : "+imgPath);
 
