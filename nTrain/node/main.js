@@ -306,7 +306,8 @@ http.createServer(function (req, res) {
 
               var startDate = new Date();
               process.chdir(trainDirectory);
-              var newTrainProcess = spawn("./process.sh", [ xmlPath, HPPath, HMPath, HPBPath, HMBPath ]);
+              console.log([ xmlPath, HPPath, HMPath, HPBPath, HMBPath, thisSessionId ]);
+              var newTrainProcess = spawn("./process.sh", [ xmlPath, HPPath, HMPath, HPBPath, HMBPath, thisSessionId ]);
               process.chdir(currentDirectory);
 
               res.end(JSON.stringify({result : 1}));
@@ -432,6 +433,24 @@ http.createServer(function (req, res) {
               res.end(JSON.stringify({
                 result : resultNumber,
                 time : (endDate - startDate)
+              }));
+            });
+
+            return;
+          case 'get_img_base64' : 
+            var sessionId = parseInt(fields.session_id);
+            var imgId = parseInt(fields.img_id);
+
+            var imgPath = sessionQueue[sessionId].imgArr[imgId].fileName;
+            // console.log("[INFO] get img : "+imgPath);
+
+            fs.readFile(imgPath, function(err, imgBuf){
+              if (err) throw err;
+              var base64Str = imgBuf.toString("base64");
+              res.end(JSON.stringify({
+                session_id : sessionId,
+                img_id : imgId,
+                base64_str : base64Str
               }));
             });
 

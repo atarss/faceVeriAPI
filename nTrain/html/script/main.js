@@ -46,10 +46,31 @@ function loadExistModels() {
   }, 'json');
 }
 
+function chooseModelSelectFunc(event){
+  var thisIndex = event.args.index;
+  var sessionId = existModelList[thisIndex].id;
+
+  for (i=0;i<8;i++) {
+    $.post(apiAddress, {
+      method : "get_img_base64",
+      session_id : sessionId,
+      img_id : i
+    }, function(data){
+      var imgId = data.img_id;
+      //jqxConsole("[INFO] "+imgDomId);
+      console.log(data.base64_str);
+      $("#demo_img_"+imgId).attr('src', "data:image/jpeg;base64,"+data.base64_str);
+    }, 'json');
+  }
+}
+
 function chooseSelectedModel(){
   var selectedModelIndex = $("#jqx_model_list").jqxListBox("selectedIndex");
   sessionId = existModelList[selectedModelIndex].id;
   $("#form_session_id").attr('value', selectedModelIndex);
+
+  //display demo pictures
+  
 
   //animation here
   $(".choose_box").animate({

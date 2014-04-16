@@ -31,6 +31,32 @@
         <div class="list-group-item" id="choose_model_box">
           <h4>Or, Choose an exist session:</h4>
           <div id="jqx_model_list"></div>
+          <div class="demo_img_box">
+            <div class="demo_img">
+              <img class="demo_img" id="demo_img_0">
+            </div>
+            <div class="demo_img">
+              <img class="demo_img" id="demo_img_1">
+            </div>
+            <div class="demo_img">
+              <img class="demo_img" id="demo_img_2">
+            </div>
+            <div class="demo_img">
+              <img class="demo_img" id="demo_img_3">
+            </div>
+            <div class="demo_img">
+              <img class="demo_img" id="demo_img_4">
+            </div>
+            <div class="demo_img">
+              <img class="demo_img" id="demo_img_5">
+            </div>
+            <div class="demo_img">
+              <img class="demo_img" id="demo_img_6">
+            </div>
+            <div class="demo_img">
+              <img class="demo_img" id="demo_img_7">
+            </div>
+          </div>
           <div class="choose_model_button_box">
             <div class="btn btn-lg btn-info" id="choose_a_model">Choose this model</div>
           </div>
@@ -152,6 +178,7 @@
       $("#jqx_listbox").jqxListBox({itemHeight: 40});
       $("#jqx_model_list").jqxListBox({itemHeight: 40});
       $("#jqx_listbox").on('select', listBoxSelectFunction);
+      $("#jqx_model_list").on('select', chooseModelSelectFunc);
 
       $("#submit_face_button").click(submitFaces);
       $("#choose_a_model").click(chooseSelectedModel);

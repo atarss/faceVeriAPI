@@ -12,6 +12,26 @@
 	margin-left: auto;
 }
 
+.demo_img_box{
+	margin-top: 15px;
+	width: 952px;
+	height: 116px;
+}
+
+div.demo_img {
+	width: 116px;
+	height: 116px;
+	margin-right: 3px;
+	/*background-color: rgba(0,0,0,0.5);*/
+	float: left;
+}
+
+img.demo_img {
+	max-height: 116px;
+	max-width: 116px;
+	position: relative;
+}
+
 .out_frame {
 	margin-left: auto;
 	margin-right: auto;
