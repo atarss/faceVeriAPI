@@ -1,5 +1,5 @@
 body {
-	background-color: #DFF0F5;
+	background-color: #D8F2EA;
 }
 
 .header {
@@ -91,7 +91,8 @@ img.demo_img {
 }
 
 .compare_button_box {
-	height: 60px;
+	height: 100px;
+	margin-top: 10px;
 	margin-left: auto;
 	margin-right: auto;
 }
@@ -121,7 +122,8 @@ img.demo_img {
 }
 
 .result_button_box {
-	height: 80px;
+	height: 60px;
+	text-align: center;
 }
 
 .compare_main_box{
@@ -184,6 +186,10 @@ canvas {
 	margin-left: auto;
 	margin-right: auto;
 	margin-bottom: 50px;
+}
+
+#compare_upload{
+	margin-left: 340px;
 }
 
 .pic_paper_container {

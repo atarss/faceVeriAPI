@@ -39,7 +39,7 @@ function saveQueueData() {
 }
 
 process.on('uncaughtException', function(err){
-  console.log("[ERR] : " + err);
+  console.log("[ERR] : " + JSON.stringify(err));
   saveQueueData();
 });
 process.on("SIGINT", saveQueueData);
@@ -184,7 +184,7 @@ http.createServer(function (req, res) {
               training : -1 // -1:not have been trained, 0:training, 1:trained
             });
             fs.mkdir(currentDirectory + 'session/' + new_id, function(){
-              res.end(JSON.stringify({ sessionId : new_id }));
+              res.end(JSON.stringify({ sessionId : new_id , alias : sessionAlias}));
 
               sessionQueue[new_id].sessionPath = currentDirectory + 'session/' + new_id;
               sessionQueue[new_id].imgArr = new Array();
