@@ -223,10 +223,8 @@ function listBoxSelectFunction(event) {
 
           $("#result_console").html(tmpStr);
         } else {
-          // if (pictureList[selectedPicId].result.length == 1) {
-          //   // $("#pic_box_0").click();
-          //   // disable auto select function...
-          // } else {
+          // TODO:
+          // First Click Checking.
           $("#result_console").html("<p style='text-align : center'>Please Select a Face...</p>");
         }
       }
