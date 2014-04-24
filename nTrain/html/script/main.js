@@ -195,7 +195,6 @@ function listBoxSelectFunction(event) {
               $("#result_console").html(tmpStr);
               $("#jqx_listbox").jqxListBox('getItems')[selectedPicId].label = "[√] " + pictureList[selectedPicId].fileName;
               $("#jqx_listbox").jqxListBox('invalidate');
-              // $($("jqx_listbox").find("span")[selectedPicId]).text("[√] " + pictureList[selectedPicId].fileName);
             } else {
               //unselect this face
               pictureList[selectedPicId].selectedId = -1;
@@ -237,9 +236,11 @@ function checkTrainingInfo(){
     method : 'check_session_status',
     session_id : sessionId
   }, function(data){
-    // jqxConsole("Training Status: "+data.status);
     if (data.status == 1){
-      clearInterval(checkIntervelId);
+      //refresh page
+      location.reload();
+
+      /*clearInterval(checkIntervelId);
       $(".out_frame").animate({
         height : '0px',
         padding : '0px'
@@ -256,7 +257,7 @@ function checkTrainingInfo(){
         padding : '10px'
       }, function(){
         //
-      }) ;
+      }) ;*/
     } else {
       // jqxConsole("Still Training... "+Date());
     }
@@ -455,16 +456,20 @@ function submitFaces(){
       method : "submit_face",
       json_data : jsonStr,
       session_id : sessionId
-    }, function(data, textStatus, jqXHR){
+    }, function(data){
       //set checkIntervelId
       $("#submit_face_button").text("Training...");
+      // Add a window here
+      dhtmlx.modalbox({ 
+        title : "Training...", 
+        text : "Training process will spend about 15 seconds, please be patient.<br /> <img style='margin-left : 225px;' src='./image/loading.gif' width='50px' height='50px'>",
+        width : "550px",
+        height : "150px"
+      });
       checkIntervelId = setInterval(checkTrainingInfo, 1000);
     }, 'json');
 
   } else {
-    // jqxConsole("[ERR] No enough faces...");
-
-    //TODO: ADD ERR Alert Here!
     dhtmlx.alert("[ERROR] No enough faces. Please choose more than 8 faces");
   }
 }
@@ -486,3 +491,4 @@ function testSelectedFace(){
     $("#compare_start").text("Compare");
   }, 'json');
 }
+
