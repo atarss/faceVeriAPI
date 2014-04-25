@@ -1,5 +1,5 @@
 /////full.js
-var apiAddress = "http://10.193.251.172:8082/ntrain_api";
+var apiAddress = "http://10.193.251.188:8082/ntrain_api";
 
 var pictureList = new Array();
 var currentActiveItem = -1;
