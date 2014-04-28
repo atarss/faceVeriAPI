@@ -461,6 +461,11 @@ http.createServer(function (req, res) {
           case 'get_img_base64' : 
             var sessionId = parseInt(fields.session_id);
             var oldImgId = parseInt(fields.img_id);
+
+            if ((! sessionQueue[sessionId].trainPics) || (! sessionQueue[sessionId].trainPics[oldImgId])) {
+              res.end("Illegal image ID.");
+              return; // jump out.
+            }
             var imgId = sessionQueue[sessionId].trainPics[oldImgId].picId;
             var imgPath = sessionQueue[sessionId].imgArr[imgId].fileName;
             // console.log("[INFO] get img : "+imgPath);
