@@ -2,13 +2,13 @@
 // main.js
 // Version : 1.0
 
-var currentDirectory = "/home/liuyuxuan/dev/node/nTrain/";
-var trainDirectory = '/home/liuyuxuan/dev/Identification/project/HFeature/';
-var compareDirectory = '/home/liuyuxuan/dev/Identification/project/recognize';
-var serverIP = "10.193.251.172";
+var currentDirectory = "/home/demoweb/face/node/nTrain/";
+var trainDirectory = '/home/demoweb/face/Identification/project/HFeature/';
+var compareDirectory = '/home/demoweb/face/Identification/project/recognize';
+var serverIP = "10.193.251.188";
 var serverPort = 8082;
 var serverApiPath = '/ntrain_api';
-var socketServerIP = "10.193.251.172";
+var socketServerIP = "10.193.251.188";
 var socketServerPort = 8888;
 
 var dbFileName = currentDirectory + "queue.db";
@@ -23,6 +23,10 @@ var util = require('util');
 var sys = require("sys");
 var spawn = require('child_process').spawn;
 var htmlparser = require('htmlparser');
+var crypto = require('crypto');
+function md5(text) {
+  return crypto.createHash('md5').update(text).digest('hex');
+};
 
 var queueJsonStr = fs.readFileSync(dbFileName) + "";
 var sessionQueue = eval(queueJsonStr);
@@ -290,8 +294,23 @@ http.createServer(function (req, res) {
             return;
 
           case 'submit_face' :
+            if (! fields.session_id) {
+              res.end("Please provide a session ID.");
+              return;
+            };
+            if (! fields.json_data) {
+              res.end("Please provide JSON Object.");
+              return;
+            };
+
             var jsonObj = eval(fields.json_data);
             var thisSessionId = parseInt(fields.session_id);
+
+            if (thisSessionId<0 || thisSessionId >= sessionQueue.length){
+              res.end("Illegal Session ID.");
+              return;
+            }
+
             console.log(fields.json_data);
 
             var xmlStr = constructFaceXmlFile(jsonObj, thisSessionId);
@@ -402,10 +421,11 @@ http.createServer(function (req, res) {
             if ((faceId >= tmpImageQueue[imgId].result.length) || (faceId < 0)) {
               res.end("Illegal Face ID"); return;
             }
-
+            
+            var hash = md5(Date());
             var xmlStr = constructTmpDetectXmlFile(tmpImageQueue[imgId], faceId);
-            var recInputXmlFileName = currentDirectory + "tmpxml/rec.input.xml";
-            var recOutputFileName = currentDirectory + "tmpxml/rec.output.txt";
+            var recInputXmlFileName = currentDirectory + "tmpxml/rec.input."+hash+".xml";
+            var recOutputFileName = currentDirectory + "tmpxml/rec.output."+hash+".txt";
             console.log("[XML] " + recInputXmlFileName + " : " + xmlStr);
             fs.writeFileSync(recInputXmlFileName, xmlStr);
 
