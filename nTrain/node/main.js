@@ -1,4 +1,4 @@
-//// N-TRAIN API SERVER 
+//// N-TRAIN API SERVER
 // main.js
 // Version : 1.0
 
@@ -158,7 +158,7 @@ http.createServer(function (req, res) {
         }
 
         switch (fields.method) { // input alias
-          case 'get_id_by_alias' : 
+          case 'get_id_by_alias' :
             var sessionAlias = fields.alias;
             var sessionId = getIdByAlias(sessionAlias);
             res.end(JSON.stringify({alias : sessionAlias, id : sessionId})); // -1 means not found.
@@ -181,7 +181,7 @@ http.createServer(function (req, res) {
             } else {
               sessionAlias = fields.alias;
             }
-            
+
             sessionQueue.push({
               id : new_id,
               alias : sessionAlias,
@@ -279,11 +279,11 @@ http.createServer(function (req, res) {
                       //queue[imgId1].result = imgResult1;
                       sessionQueue[thisSessionId].imgArr[imgId].result = imgResult;
                       responseObj = {
-                        id : imgId, 
-                        result : imgResult, 
+                        id : imgId,
+                        result : imgResult,
                         time : (endDate-startDate)
                       };
-                      
+
                       res.end(JSON.stringify(responseObj));
                     }
                   });
@@ -391,11 +391,11 @@ http.createServer(function (req, res) {
                     tmpImageQueue[tmpImgId].result = imgResult;
                     // sessionQueue[thisSessionId].imgArr[imgId].result = imgResult;
                     responseObj = {
-                      id : tmpImgId, 
-                      result : imgResult, 
+                      id : tmpImgId,
+                      result : imgResult,
                       time : (endDate-startDate)
                     };
-                    
+
                     res.end(JSON.stringify(responseObj));
                   }
                 });
@@ -410,7 +410,7 @@ http.createServer(function (req, res) {
               res.end("Illegal Session ID"); return;
             }
             if (sessionQueue[sessionId].training < 1) {
-              res.end("Model not Trained."); return; 
+              res.end("Model not Trained."); return;
             }
 
             var imgId = parseInt(fields.img_id);
@@ -421,7 +421,7 @@ http.createServer(function (req, res) {
             if ((faceId >= tmpImageQueue[imgId].result.length) || (faceId < 0)) {
               res.end("Illegal Face ID"); return;
             }
-            
+
             var hash = md5(Date());
             var xmlStr = constructTmpDetectXmlFile(tmpImageQueue[imgId], faceId);
             var recInputXmlFileName = currentDirectory + "tmpxml/rec.input."+hash+".xml";
@@ -458,7 +458,7 @@ http.createServer(function (req, res) {
             });
 
             return;
-          case 'get_img_base64' : 
+          case 'get_img_base64' :
             var sessionId = parseInt(fields.session_id);
             var oldImgId = parseInt(fields.img_id);
 

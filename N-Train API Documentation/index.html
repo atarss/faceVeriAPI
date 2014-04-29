@@ -13,10 +13,14 @@
       border-width : 2px;
       padding : 15px;
     }
+    .date {
+      text-align: right;
+    }
     </style>
   </head>
   <body style="width : 800px">
     <h1>N-Train API Documentation</h1>
+    <p class="date"><a href="mailto:liuyuxuan@bupt.edu.cn">Yuxuan Liu</a><br />Date : 2014.04.29</p>
     <p>API Address : <a href="http://123.127.237.160:8080/ntrain_api">http://123.127.237.160:8080/ntrain_api</a></p>
     <p>All API requests should be used in HTTP POST method. Sending an HTTP GET request will get an error(you can simply click on the API Address above to test it). For "upload_image" and "detect_tmp_face" API method, in order to upload a file, the form should be set to 'enctype="multipart/form-data"'.</p>
     <p>To get more information, view HTML source code of 'Demo' part.</p>
@@ -257,17 +261,51 @@
     </ul>
     <h4>Response</h4>
     <pre class="brush : js">
-    {
-      "BLABLA"
-    }
+    [
+      {"id":1,"alias":"Obama"},
+      {"id":2,"alias":"hollande"},
+      {"id":6,"alias":"6"},
+      {"id":7,"alias":"7"}
+    ]
     </pre>
+    <p>The response is an array of trained model, offering 'id' and 'alias' properties.
     <ul>
-      <li>'result' is the similarity between image and the model.</li>
+      <li>'id' is the session ID of a trained model.</li>
+      <li>'alias' is the name of a trained model.</li>
     </ul>
     <h4>Demo</h4>
     <div class="form">
       <form action="http://123.127.237.160:8080/ntrain_api" method="post">
-        method : <input type="text" name="method" value="compare_api_methods"><br />
+        method : <input type="text" name="method" value="get_model_list"><br />
+        <input type="submit" value="submit">
+      </form>
+    </div>
+    <hr />
+    <h3 id="get_img_base64">Method : get_img_base64</h3>
+    <p>This API method privides to get thumbnail image of a trained model. Sometime, alias cannot describe a model correctly and user may need to view sample images of a trained model. As a result, this method can return the image in base64 string. Pictures uploaded but not used in training process will not be returned. For example, if #0, #1 #3, #4, #6</p>
+    <h4>Required parameters</h4>
+    <ul>
+      <li>method : 'get_img_base64'</li>
+      <li>session_id : Model session ID</li>
+      <li>img_id : The nth image used in training process. Pictures uploaded but not used in training process will not be returned. So this ID is not ID in <a href="#upload_image">upload_image</a> method. For example, if #0, #1 #3, #4, #6... images were chosen to be trained, and img_id=2 is provided in this method, server will response #3 image uploaded in upload_image method.</li>
+    </ul>
+    <h4>Response</h4>
+    <pre class="brush : js">
+    {
+      "session_id":1,
+      "img_id":1,
+      "base64_str":"/9j/4AAQSkZJRgABAQAAA......"
+    }
+    </pre>
+    <ul>
+      <li>base64_str : Base-64 encoded JPEG image file. "/9j/" is like a file header of a JPEG file in this base64 string</li>
+    </ul>
+    <h4>Demo</h4>
+    <div class="form">
+      <form action="http://123.127.237.160:8080/ntrain_api" method="post">
+        method : <input type="text" name="method" value="get_img_base64"><br />
+        session_id : <input type="text" name="session_id" value="1"><br />
+        img_id : <input type="text" name="img_id" value="1"><br />
         <input type="submit" value="submit">
       </form>
     </div>
