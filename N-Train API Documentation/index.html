@@ -22,7 +22,7 @@
     <h1>N-Train API Documentation</h1>
     <p class="date"><a href="mailto:liuyuxuan@bupt.edu.cn">Yuxuan Liu</a><br />Date : 2014.04.29</p>
     <p>API Address : <a href="http://123.127.237.160:8080/ntrain_api">http://123.127.237.160:8080/ntrain_api</a></p>
-    <p>All API requests should be used in HTTP POST method. Sending an HTTP GET request will get an error(you can simply click on the API Address above to test it). For "upload_image" and "detect_tmp_face" API method, in order to upload a file, the form should be set to 'enctype="multipart/form-data"'.</p>
+    <p>All API requests should be used in HTTP POST method. Sending an HTTP GET request will get an error(you can simply click on the API Address above to test it). For "<a href="#upload_image">upload_image</a>" and "<a href="#detect_tmp_face">detect_tmp_face</a>" API method, in order to upload a file, the form should be set to 'enctype="multipart/form-data"'.</p>
     <p>To get more information, view HTML source code of 'Demo' part.</p>
     <ul>
       <li>
@@ -58,7 +58,6 @@
     <ul>
       <li>method : 'create_session'</li>
       <li>alias : Optional. You can specify a model name of a new model. If it is not specified, server will generated a name same as session ID.</li>
-      <!-- <strong>'multipart/form-data' form type is requied to upload a file.</strong> -->
     </ul>
     <h4>Response</h4>
     <pre class="brush : js">
@@ -118,7 +117,7 @@
     <div class="form">
       <form action="http://123.127.237.160:8080/ntrain_api" method="post" enctype="multipart/form-data">
         method : <input type="text" name="method" value="upload_image"><br />
-        session_id : <input type="text" name="session_id" value="3"><br />
+        session_id : <input type="text" name="session_id" value="0"><br />
         imgfile : <input type="file" name="imgfile"><br />
         <input type="submit" value="submit">
       </form>
@@ -136,7 +135,9 @@
     <h4>Response</h4>
     <p>If the training process has been started, server will response a 'result=1'</p>
     <pre class="brush : js">
-    { "result":1 }
+    {
+      "result" : 1
+    }
     </pre>
     <h4>Demo</h4>
     <div class="form">
@@ -156,11 +157,10 @@
       <li>session_id : Session ID.</li>
     </ul>
     <h4>Response</h4>
-    <p>If the training process has been started, server will response a 'result=1'</p>
     <pre class="brush : js">
     {
-      "id":0,
-      "status":-1
+      "id" : 0,
+      "status" : -1
     }
     </pre>
     <ul>
@@ -282,7 +282,7 @@
     </div>
     <hr />
     <h3 id="get_img_base64">Method : get_img_base64</h3>
-    <p>This API method privides to get thumbnail image of a trained model. Sometime, alias cannot describe a model correctly and user may need to view sample images of a trained model. As a result, this method can return the image in base64 string. Pictures uploaded but not used in training process will not be returned. For example, if #0, #1 #3, #4, #6</p>
+    <p>This API method privides to get thumbnail image of a trained model. Sometime, alias cannot describe a model correctly and user may need to view sample images of a trained model. As a result, this method can return the image in base64 string.</p>
     <h4>Required parameters</h4>
     <ul>
       <li>method : 'get_img_base64'</li>
