@@ -79,7 +79,7 @@ function chooseSelectedModel(){
   sessionId = existModelList[selectedModelIndex].id;
   sessionAlias = existModelList[selectedModelIndex].alias;
 
-  $("#test_model_div").text($("#test_model_div").text() + "[Name : " + sessionAlias + "]");
+  $("#test_model_div").text($("#test_model_div").text() + " [" + sessionAlias + "]");
   $("#form_session_id").attr('value', selectedModelIndex);
 
   //animation here
@@ -242,7 +242,7 @@ function checkTrainingInfo(){
   }, function(data){
     if (data.status == 1){
       //refresh page
-      // location.reload();
+      location.reload();
     } /*else {
       // jqxConsole("Still Training... "+Date());
     }*/
@@ -394,7 +394,7 @@ function submitCompareFile() {
           $("#compare_form").ajaxSubmit({
             dataType : 'json',
             success : function(resp, status, xhr, jq){
-              $("#compare_upload").text("Choose File");
+              $("#compare_upload").text("Upload File");
               compareImgObj.result = resp.result;
               compareImgObj.time = resp.time;
               compareImgObj.serverId = resp.id;
@@ -452,7 +452,7 @@ function submitCompareFile() {
                       tmpStr += "Face Size : "+compareImgObj.result[thisId].w+"x"+compareImgObj.result[thisId].h;
                       tmpStr += spaceN(10);
                       tmpStr += "Detection Time : "+compareImgObj.time+"ms";
-                      tmpStr += "<br/></p>";
+                      tmpStr += "<br /></p><p id='tmp_compare_p'>Click 'Score' to recognize.</p>";
 
                       $("#compare_console").html(tmpStr);
                     } else {
@@ -472,6 +472,8 @@ function submitCompareFile() {
               if (compareImgObj.result.length == 1) {
                 $("#compare_box_0").click();
                 $("#compare_start").click();
+              } else {
+                $("#compare_console").append($("<p>Select a face to recognize.</p>").css('font-size', 'x-large')[0]);
               }
             }
           });
@@ -544,10 +546,12 @@ function testSelectedFace(){
     session_id : sessionId
   };
 
+  $("#tmp_compare_p").remove();
   $("#compare_start").text("Scoring...");
   $.post(apiAddress, postObj, function(data, textStatus, jqXHR){
     $("#compare_console").find("p").append($("<span id='temp_score_box'>Score: "+data.result+" Time: "+data.time+"ms</span>").css('font-size', 'x-large')[0]);
-    $("#compare_start").text("Compare");
+    $("#compare_console").append($("<p>Threshold score is 0.1 ." + spaceN(5) + "Score more than 0.1 means the person is [" + sessionAlias + "].</p>").css('margin', '0')[0]);
+    $("#compare_start").text("Score");
   }, 'json');
 }
 

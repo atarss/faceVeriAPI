@@ -124,10 +124,10 @@
         <div class="panel panel-info">
           <div class="panel-heading">
             <div class="panel-title" id="test_model_div">
-              Select a picture to check similarity with this face model
+              Upload a picture to recognize
             </div>
           </div>
-          <div class="panel-body">
+          <div class="panel-body" style="height : 670px;">
             <div class="compare_main_box">
               <div class="pic_paper_container" id="compare_paper_container"></div>
               <div class="img_box">
@@ -136,9 +136,9 @@
             </div>
             <div class="compare_button_box">
               <div class="result_button_box" id="compare_console"></div>
-              <form action="http://10.193.251.188:8082/ntrain_api" enctype="multipart/form-data" id="compare_form" method="post">
-                <div class="btn btn-lg btn-info" id="compare_upload">Select Picture</div>&nbsp;
-                <div class="btn btn-lg btn-info" id="compare_start">Compare</div>&nbsp;
+              <form action="http://10.193.251.188:8082/ntrain_api" enctype="multipart/form-data" id="compare_form" method="post" style="margin-top : 30px;">
+                <div class="btn btn-lg btn-info" id="compare_upload">Upload File</div>&nbsp;
+                <div class="btn btn-lg btn-info" id="compare_start">Score</div>&nbsp;
                 <div class="btn btn-lg btn-warning" id="compare_back_btn">Back</div>
                 <input type="file" name="imgfile" accept="image/jpeg" style="display:none" id="compare_img_file">
                 <input type="hidden" name="version" value="1.0">
