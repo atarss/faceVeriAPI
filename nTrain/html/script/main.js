@@ -111,6 +111,8 @@ function newSessionWithAlias() {
     $('#form_session_id').attr('value', sessionId);
     hasSessionId = true;
 
+    // $("#upload_panel_title").html("1. Add face samples of <strong>" + sessionAlias +"</strong>");
+    $("#upload_panel_text").html("You can upload 8 to 20 pictures with faces of <strong>" + sessionAlias + "</strong> to train his/her face model. ");
     //animate to display train panel
     $(".out_frame").css("display","block");
     $(".choose_box").animate({
@@ -190,6 +192,7 @@ function listBoxSelectFunction(event) {
               tmpStr += "Face Size : "+pictureList[selectedPicId].result[thisId].w+"x"+pictureList[selectedPicId].result[thisId].h;
               tmpStr += "<br />";
               tmpStr += "Detection Time : "+pictureList[selectedPicId].time+"ms";
+              tmpStr += "<br />Click the face again to cancel face selection.";
               tmpStr += "</p>";
 
               $("#result_console").html(tmpStr);
@@ -218,6 +221,7 @@ function listBoxSelectFunction(event) {
           tmpStr += "Face Size : "+pictureList[selectedPicId].result[selectedFaceId].w+"x"+pictureList[selectedPicId].result[selectedFaceId].h;
           tmpStr += "<br />";
           tmpStr += "Detection Time : "+pictureList[selectedPicId].time+"ms";
+          tmpStr += "<br />Click the face again to cancel face selection.";
           tmpStr += "</p>";
 
           $("#result_console").html(tmpStr);
@@ -238,29 +242,10 @@ function checkTrainingInfo(){
   }, function(data){
     if (data.status == 1){
       //refresh page
-      location.reload();
-
-      /*clearInterval(checkIntervelId);
-      $(".out_frame").animate({
-        height : '0px',
-        padding : '0px'
-      }, defaultAnimationLength, function(){
-        $(this).css('display', 'none');
-      });
-
-      $(".submit_face_box").animate({ height : '0px' }, defaultAnimationLength, function(){
-        $(this).css('display', 'none');
-      });
-
-      $(".compare_face_box").css('display', 'block').animate({
-        height : '700px',
-        padding : '10px'
-      }, function(){
-        //
-      }) ;*/
-    } else {
+      // location.reload();
+    } /*else {
       // jqxConsole("Still Training... "+Date());
-    }
+    }*/
   }, 'json');
 }
 
@@ -296,6 +281,80 @@ function submitFile() {
           success : function(resp, status, xhr, jq){
             pictureList[thisId].result = resp.result;
             pictureList[thisId].time = resp.time;
+
+            if (parseInt($("#jqx_listbox").jqxListBox("selectedIndex")) == thisId) {
+              //It is chosen
+              console.log('chosen');
+              if (resp.result.length == 0) {
+                // NO FACES FOUND.
+                $("#result_console").html("<h3 style='text-align : center; color : red;'>No faces found. </h3>");
+              } else {
+                // add face chooser.
+                var picScale = $("#file_img").width() / pictureList[thisId].originalWidth;
+                $("#result_console").html("<p style='text-align : center'>Please Select a Face...</p>");
+                for (i=0; i<resp.result.length; i++){
+                  $("#paper_container").prepend("<div class='pic_paper_container' id='pic_box_container_"+i+"'></div>");
+                  $("#pic_box_container_"+i).prepend("<div class='pic_paper_box' id='pic_box_"+i+"'></div>");
+
+                  $("#pic_box_"+i).width(parseInt(resp.result[i].w*picScale)).height(parseInt(resp.result[i].h*picScale));
+                  $("#pic_box_"+i).css('left',parseInt(resp.result[i].x*picScale)).css('top',parseInt(resp.result[i].y*picScale));
+
+                  $("#pic_box_"+i).prepend("<canvas id='canvas_"+i+"' width="+parseInt(resp.result[i].w*picScale)+" height="+parseInt(resp.result[i].h*picScale)+" />");
+                  var tmpCanvas = document.getElementById('canvas_'+i).getContext("2d");
+                  for (j=0;j<27;j++){
+                    var transX = (resp.result[i].points[j].x - resp.result[i].x)*picScale;
+                    var transY = (resp.result[i].points[j].y - resp.result[i].y)*picScale;
+                    tmpCanvas.beginPath();
+                    tmpCanvas.arc(transX, transY, 1, 0, 2*Math.PI);
+                    tmpCanvas.fillStyle = 'red';
+                    tmpCanvas.fill();
+                  }
+
+                  $("#pic_box_"+i).mouseenter(function(){
+                    var thisId = parseInt($(this).attr("id").slice(8));
+                    if (pictureList[selectedPicId].selectedId != thisId) {
+                      $(this).css('background-color','rgba(255,255,255,0.5)');
+                      $(this).find("canvas").css("display", "inline-block");
+                    }
+                  }).mouseleave(function(){
+                    var thisId = parseInt($(this).attr("id").slice(8));
+                    if (pictureList[selectedPicId].selectedId != thisId) {
+                      $(this).css('background-color','transparent');
+                      $(this).find("canvas").css("display", "none");
+                    }
+                  }).click(function(){
+                    var thisId = parseInt($(this).attr("id").slice(8));
+                    if (pictureList[selectedPicId].selectedId != thisId) {
+                      // select this face
+                      $("#pic_box_"+pictureList[selectedPicId].selectedId).css('border-color','black').css('background-color','transparent').find('canvas').css('display','none');
+                      $(this).css('border-color','red').css('background-color','rgba(255,255,255,0.5)');
+                      $(this).find("canvas").css("display", "inline-block");
+                      pictureList[selectedPicId].selectedId = thisId;
+
+                      var tmpStr = "<p>";
+                      tmpStr += "Picture Size : "+pictureList[selectedPicId].originalWidth+"x"+pictureList[selectedPicId].originalHeight;
+                      tmpStr += '<br />';
+                      tmpStr += "Face Size : "+pictureList[selectedPicId].result[thisId].w+"x"+pictureList[selectedPicId].result[thisId].h;
+                      tmpStr += "<br />";
+                      tmpStr += "Detection Time : "+pictureList[selectedPicId].time+"ms";
+                      tmpStr += "<br />Click the face again to cancel face selection.";
+                      tmpStr += "</p>";
+
+                      $("#result_console").html(tmpStr);
+                      $("#jqx_listbox").jqxListBox('getItems')[selectedPicId].label = "[√] " + pictureList[selectedPicId].fileName;
+                      $("#jqx_listbox").jqxListBox('invalidate');
+                    } else {
+                      //unselect this face
+                      pictureList[selectedPicId].selectedId = -1;
+                      $("#jqx_listbox").jqxListBox('getItems')[selectedPicId].label = "[X] " + pictureList[selectedPicId].fileName;
+                      $("#jqx_listbox").jqxListBox('invalidate');
+                      $(this).css('border-color','black');
+                      $("#result_console").html("<p style='text-align : center'>Please Select a Face...</p>");
+                    }
+                  });
+                }
+              }
+            }
           }
         });
       }

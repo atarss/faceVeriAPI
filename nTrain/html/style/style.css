@@ -52,7 +52,7 @@ img.demo_img {
 }
 
 .upload_frame {
-	height: 200px;
+	height: 250px;
 	margin-top: auto;
 	margin-bottom: auto;
 	padding: 10px;
@@ -70,6 +70,10 @@ img.demo_img {
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
+}
+
+.upload_panel_frame {
+	height: 75px;
 }
 
 .result_frame {
@@ -189,7 +193,7 @@ canvas {
 }
 
 #compare_upload{
-	margin-left: 340px;
+	margin-left: 290px;
 }
 
 .pic_paper_container {

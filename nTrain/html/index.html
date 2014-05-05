@@ -1,6 +1,7 @@
 <html>
   <head>
-  	<title>N-Train Demo</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  	<title>face recognition demo by pre-trained model</title>
   	<script src="script/main.js"></script>
   	<script src="script/jquery-1.11.0.min.js"></script>
     <script src="script/jquery.form.js"></script>
@@ -18,14 +19,14 @@
   </head>
   <body>
     <div class="header">
-      <h1>N-Train Demo</h1>
+      <h1>face recognition demo by pre-trained model</h1>
     </div>
     <div class="choose_box">
       <div class="list-group">
         <div class="list-group-item">
           <h4>
-            Create A New Model With Name : 
-            <input type="input" id="alias_name">&nbsp;<div class="btn btn-sm btn-info" id="new_session_button">Submit</div>
+            Create a new face model, input its name here 
+            <input type="input" id="alias_name">&nbsp;<div class="btn btn-sm btn-info" id="new_session_button">Create</div>
           </h4>
         </div>
         <div class="list-group-item" id="choose_model_box">
@@ -58,7 +59,7 @@
             </div>
           </div>
           <div class="choose_model_button_box">
-            <div class="btn btn-lg btn-info" id="choose_a_model">Choose this model</div>
+            <div class="btn btn-lg btn-info" id="choose_a_model">Choose model</div>
           </div>
         </div>
       </div>
@@ -68,18 +69,20 @@
         <div class="upload_frame">
           <div class="panel panel-info">
             <div class="panel-heading">
-              <div class="panel-title">Upload Here:</div>
+              <div class="panel-title">1. Add face samples</div>
             </div>
             <div class="panel-body">
               <br />
               <form action="http://10.193.251.188:8082/ntrain_api" enctype="multipart/form-data" id="upload_form" method="post">
-                <div class="btn btn-lg btn-info" id="bt">Upload</div>
+                <div class="btn btn-lg btn-info" id="bt">Choose a file</div>
                 <input type="file" name="imgfile" accept="image/jpeg" style="display:none" id="img_file">
                 <input type="hidden" name="version" value="1.0">
                 <input type="hidden" name="method" value="upload_image">
                 <input type="hidden" name="session_id" value="-1" id="form_session_id">
               </form>
-              <h5 style="text-align:center">You can upload 8 to 20 pictures here</h5>
+              <div class="upload_panel_frame">
+                <h5 style="text-align:center" id="upload_panel_text"></h5>
+              </div>
             </div>
           </div>
         </div>
@@ -87,10 +90,11 @@
           <div class="panel panel-info">
             <div class="panel-heading">
               <div class="panel-title">
-                File List (Files with '√' will be uploaded)
+                2. File List
               </div>
             </div>
-            <div id="jqx_listbox" style="height : 455px"></div>
+            <li class="list-group-item">Choose the following files, click a face on the right side image for face model training. Only the faces chosen (with '√' beside file name) could be uploaded for training. </li>
+            <div id="jqx_listbox" style="height : 283px"></div>
           </div>
         </div>
       </div>
@@ -98,7 +102,7 @@
         <div class="panel panel-info" style="height : 700px;">
           <div class="panel-heading">
             <div class="panel-title">
-              Preview
+              3. Choose a Face 
             </div>
           </div>
           <div class="panel-body">
@@ -113,14 +117,14 @@
       </div>
     </div>
     <div class="submit_face_box">
-      <div class="btn btn-lg btn-info" id="submit_face_button">Submit Faces</div>
+      <div class="btn btn-lg btn-info" id="submit_face_button">4. Start Training</div>
     </div>
     <div class="compare_face_box">
       <div class="compare_frame">
         <div class="panel panel-info">
           <div class="panel-heading">
             <div class="panel-title" id="test_model_div">
-              Test Model
+              Select a picture to check similarity with this face model
             </div>
           </div>
           <div class="panel-body">
@@ -133,8 +137,9 @@
             <div class="compare_button_box">
               <div class="result_button_box" id="compare_console"></div>
               <form action="http://10.193.251.188:8082/ntrain_api" enctype="multipart/form-data" id="compare_form" method="post">
-                <div class="btn btn-lg btn-info" id="compare_upload">Choose File</div>
-                <div class="btn btn-lg btn-info" id="compare_start">Compare</div>
+                <div class="btn btn-lg btn-info" id="compare_upload">Select Picture</div>&nbsp;
+                <div class="btn btn-lg btn-info" id="compare_start">Compare</div>&nbsp;
+                <div class="btn btn-lg btn-warning" id="compare_back_btn">Back</div>
                 <input type="file" name="imgfile" accept="image/jpeg" style="display:none" id="compare_img_file">
                 <input type="hidden" name="version" value="1.0">
                 <input type="hidden" name="method" value="detect_tmp_face">
@@ -159,6 +164,8 @@
       var compareFileInput = $("#compare_img_file").wrap(compareWrapper);
       $("#compare_upload").click(function(){ compareFileInput.click(); });
       $("#compare_start").click(testSelectedFace);
+      $("#compare_back_btn").click(function(){ location.reload(); }); // refresh page.
+
       compareFileInput.change(function(){ 
         submitCompareFile();
       });
@@ -166,7 +173,7 @@
       $("#jqx_listbox").jqxListBox({
         source: [],
         width: '326px', 
-        height: '455px'
+        height: '283px'
       });
 
       $("#jqx_model_list").jqxListBox({
@@ -182,6 +189,7 @@
 
       $("#submit_face_button").click(submitFaces);
       $("#choose_a_model").click(chooseSelectedModel);
+      $("#compare_back").click()
 
       loadExistModels();
     </script>
