@@ -168,19 +168,12 @@ http.createServer(function (req, res) {
             var connectionBody = '';
             connection.connect(socketServerPort,socketServerIP);
             connection.write(inputXmlFileName + "#" + outputXmlFileName + "#" + "detect");
-            connection.on('data', function(d){connectionBody += d});
 
-            // var newExec = spawn('/home/liuyuxuan/dev/xml_interface/project/detxml' , 
-            //   [inputXmlFileName, 
-            //    outputXmlFileName, 
-            //    '/home/liuyuxuan/dev/faceDet/project/Models/f_cascade.xml', 
-            //    '/home/liuyuxuan/dev/faceDet/project/Models/models.file']
-            // );
-
+            connection.on('data', function(data){connectionBody += data});
             connection.on('close', function(){
               //program end
               connection.destroy();
-              console.log(connectionBody);
+              // console.log(connectionBody);
               var endDate = new Date();
               console.log("Time : "+(endDate-startDate)+"ms");
 
