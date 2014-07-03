@@ -4,7 +4,7 @@
 
 var currentApiVersion = "1.0";
 var processDir = "/home/bai/demos/deep_classify/engine/testdata/";
-var serverIP = "10l.193.251.172";
+var serverIP = "127.0.0.1";
 var serverPort = 8080;
 var serverApiPath = '/image_api';
 // var maxProcessQueueLength = 20; //Process up to 20 images to GPU at a time
