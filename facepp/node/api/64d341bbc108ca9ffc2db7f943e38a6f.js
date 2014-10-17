@@ -1,4 +1,4 @@
-// 64d341bbc108ca9ffc2db7f943e38a6f
+// 64d341bbc108ca9ffc2db7f943e38a6f.js
 // Magic Code for shutting down service.
 // Only for Testing.
 

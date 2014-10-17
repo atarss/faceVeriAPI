@@ -18,6 +18,20 @@ function simpleConnection(mongoAddress, callback) {
 function testAddress(mongoAddress) {
 	simpleConnection(mongoAddress, function(db){
 		apiUtils.sysLog("Test DB Server : Connection Success");
+		db.close();
+	});
+}
+
+function insertSingleDocument(mongoAddress, collectionName, documentObj, callback) { // callback(result)
+	simpleConnection(mongoAddress, function(db){
+		var dbCollection = db.collection(collectionName);
+		dbCollection.insert([documentObj] , function(err, result) {
+			if (err) {
+				apiUtils.sysErr(err);
+			} else {
+				callback(result);
+			}
+		})
 	})
 }
 

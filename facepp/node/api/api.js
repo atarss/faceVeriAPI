@@ -7,7 +7,7 @@ var http = require("http");
 var urlParser = require('url').parse;
 
 function listen(address, port) {
-	http.createServer(function(req, response){
+	http.createServer(function(req, resp){
 		// TODO: Logging All Req to DB or files.
 
 		var urlPath = urlParser(req.url).pathname.slice(1);
@@ -16,10 +16,10 @@ function listen(address, port) {
 		var reqParaObj = {};
 
 		if (apiList[urlPath]) {
-			apiList[urlPath].worker(reqParaObj, response);
+			apiList[urlPath].worker(reqParaObj, resp);
 		} else {
 			apiUtils.sysErr("No such API method : " + urlPath);
-			response.end("No such API method : " + urlPath);
+			resp.end("No such API method : " + urlPath);
 		}
 
 	}).listen(port, address);

@@ -7,15 +7,15 @@ global.apiUtils = apiUtils;
 apiUtils.sysLog("Utils Loaded");
 
 var mainConfigObj = require("./config.js").config;
-global.mainConfigObj = mainConfigObj;
+global.apiConfig = mainConfigObj;
 apiUtils.sysLog("Configuration File Loaded ('config.js')");
 
 var apiDb = require("./database/db.js");
 apiDb.testAddress(mainConfigObj.mongoServerUrl);
 global.apiDb = apiDb;
 apiUtils.sysLog("Database Driver Loaded.");
-apiUtils.sysLog("Mongodb URI: " + mainConfigObj.mongoServerUrl);
+apiUtils.sysLog("Mongodb URI: " + apiConfig.mongoServerUrl);
 
 var apiFrame = require("./api/api.js");
-apiFrame.listen(mainConfigObj.serverAddress, mainConfigObj.serverPort);
+apiFrame.listen(apiConfig.serverAddress, apiConfig.serverPort);
 apiUtils.sysLog("HTTP Server Ready.");
