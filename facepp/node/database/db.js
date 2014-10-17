@@ -8,7 +8,7 @@ exports.mongo = mongo;
 function simpleConnection(mongoAddress, callback) {
 	mongo.MongoClient.connect(mongoAddress, function(err, db){
 		if (err) {
-			throw err;
+			apiUtils.sysErr("Warning : cannot connect to mongodb server. Daemon is down?");
 		} else {
 			callback(db);
 		}
@@ -17,7 +17,7 @@ function simpleConnection(mongoAddress, callback) {
 
 function testAddress(mongoAddress) {
 	simpleConnection(mongoAddress, function(db){
-		apiUtils.sysLog("Connection Success");
+		apiUtils.sysLog("Test DB Server : Connection Success");
 	})
 }
 

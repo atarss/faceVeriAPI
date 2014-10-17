@@ -11,5 +11,6 @@ process.on("SIGINT", function(){
 	process.exit(0);
 });
 
+
 exports.sysLog = sysLog;
 exports.sysErr = sysErr;
