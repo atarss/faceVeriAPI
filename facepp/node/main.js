@@ -16,6 +16,6 @@ global.apiDb = apiDb;
 apiUtils.sysLog("Database Driver Loaded.");
 apiUtils.sysLog("Mongodb URI: " + apiConfig.mongoServerUrl);
 
-var apiFrame = require("./api/api.js");
+var apiFrame = require("./api.js");
 apiFrame.listen(apiConfig.serverAddress, apiConfig.serverPort);
 apiUtils.sysLog("HTTP Server Ready.");
