@@ -2,9 +2,18 @@
 // API Framework for facepp
 // by Andy 2014
 
-var apiList = require("./apilist.js").list;
+//Load API List from indexFolder.
 var http = require("http");
 var urlParser = require('url').parse;
+
+var fileList = apiUtils.getFileFromDirByPattern(apiConfig.indexFolder,".js");
+var apiList = {};
+for (index in fileList){
+	var fullPath = fileList[index];
+	var apiMethodName = fullPath.slice(0,fullPath.length-3).slice(apiConfig.indexFolder.length);
+	apiList[apiMethodName] = require(fullPath);
+	apiUtils.sysLog("API Method '" + apiMethodName + "' is loaded.");
+}
 
 function listen(address, port) {
 	http.createServer(function(req, resp){
@@ -13,6 +22,7 @@ function listen(address, port) {
 		var urlPath = urlParser(req.url).pathname.slice(1);
 
 		// TODO: get parameters here and pass to worker.
+		// temperorily using formidable Library.
 		var reqParaObj = {};
 
 		if (apiList[urlPath]) {

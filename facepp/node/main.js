@@ -10,7 +10,7 @@ var mainConfigObj = require("./config.js").config;
 global.apiConfig = mainConfigObj;
 apiUtils.sysLog("Configuration File Loaded ('config.js')");
 
-var apiDb = require("./database/db.js");
+var apiDb = require("./db.js");
 apiDb.testAddress(mainConfigObj.mongoServerUrl);
 global.apiDb = apiDb;
 apiUtils.sysLog("Database Driver Loaded.");
