@@ -3,6 +3,8 @@
 // Using mongodb as database backend.
 
 var mongo = require("mongodb");
+var defaultMongoAddress = apiConfig.mongoServerUrl;
+
 exports.mongo = mongo;
 
 function simpleConnection(mongoAddress, callback) {
@@ -18,18 +20,21 @@ function simpleConnection(mongoAddress, callback) {
 function testAddress(mongoAddress) {
 	simpleConnection(mongoAddress, function(db){
 		apiUtils.sysLog("Test DB Server : Connection Success");
+		defaultMongoAddress = mongoAddress;
 		db.close();
 	});
 }
 
-function insertSingleDocument(mongoAddress, collectionName, documentObj, callback) { // callback(result)
-	simpleConnection(mongoAddress, function(db){
+function insertSingleDocument(collectionName, documentObj, callback) { // callback(result)
+	simpleConnection(defaultMongoAddress, function(db){
 		var dbCollection = db.collection(collectionName);
 		dbCollection.insert([documentObj] , function(err, result) {
 			if (err) {
 				apiUtils.sysErr(err);
 			} else {
-				callback(result);
+				if (callback) {
+					callback(result);
+				}
 			}
 		})
 	})
@@ -37,3 +42,4 @@ function insertSingleDocument(mongoAddress, collectionName, documentObj, callbac
 
 exports.simpleConnection = simpleConnection;
 exports.testAddress = testAddress;
+exports.insertSingleDocument = insertSingleDocument;

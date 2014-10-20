@@ -19,3 +19,7 @@ apiUtils.sysLog("Mongodb URI: " + apiConfig.mongoServerUrl);
 var apiFrame = require("./api.js");
 apiFrame.listen(apiConfig.serverAddress, apiConfig.serverPort);
 apiUtils.sysLog("HTTP Server Ready.");
+
+apiDb.insertSingleDocument("testCollection", {date : Date()}, function(result){
+	console.log(result[0]);
+});
