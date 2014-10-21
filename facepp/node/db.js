@@ -24,11 +24,12 @@ function testAddress(mongoAddress) {
 	});
 }
 
-function insertSingleDocument(collectionName, documentObj, callback) { // callback(result)
+function insertDocumentsArray(collectionName, documentObjArr, callback) { // callback(result)
 	simpleConnection(defaultMongoAddress, function(db){
 		var dbCollection = db.collection(collectionName);
-		dbCollection.insert([documentObj] , function(err, result) {
+		dbCollection.insert(documentObjArr , function(err, result) {
 			db.close();
+			
 			if (err) {
 				apiUtils.sysErr(err);
 			} else {
@@ -38,6 +39,10 @@ function insertSingleDocument(collectionName, documentObj, callback) { // callba
 			}
 		});
 	});
+}
+
+function insertSingleDocument(collectionName, documentObj, callback) { // callback(result)
+	insertDocumentsArray(collectionName, [documentObj], callback);
 }
 
 exports.mongo = mongo;
