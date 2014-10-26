@@ -8,6 +8,10 @@ var sysErr = function(str) {
 	console.log(Date() + " [ERR] " + str);
 };
 
+var sysDebug = function(str) {
+	console.log(Date() + " [DEBUG] " + str);
+};
+
 function strIsEndWith(longStr, shortStr) {
 	var longLength = longStr.length;
 	var shortLength = shortStr.length;
@@ -39,11 +43,17 @@ var getFileFromDirByPattern = function(pathLocation, patternStr) {
 	return fileList;
 }
 
-process.on("SIGINT", function(){
-	sysLog("Got SIGINT, quit now.");
-	process.exit(0);
-});
+var registerSigint = function(func){
+	process.on("SIGINT", function(){
+		sysLog("Got SIGINT, quit now.");
+		if (func) {
+			func();
+		}
+		process.exit(0);
+	});	
+}
 
 exports.sysLog = sysLog;
 exports.sysErr = sysErr;
 exports.getFileFromDirByPattern = getFileFromDirByPattern;
+exports.registerSigint = registerSigint;
